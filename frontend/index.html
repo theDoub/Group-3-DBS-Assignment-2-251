@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book4U Discount Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f3f3;
+            padding: 40px;
+        }
+        .container {
+            width: 450px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 12px;
+            width: 100%;
+            background: #007bff;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056d2;
+        }
+        .result {
+            background: #e4ffe4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error {
+            background: #ffe4e4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Apply Discount - Book4U</h2>
+
+    <label>OrderID</label>
+    <input id="orderId" value="ORD00001">
+
+    <label>OrderNo</label>
+    <input id="orderNo" type="number" value="1">
+
+    <label>Discount ID</label>
+    <input id="discountId" type="number" value="1">
+
+    <button onclick="applyDiscount()">Apply Discount</button>
+
+    <div id="resultBox" class="result"></div>
+    <div id="errorBox" class="error"></div>
+</div>
+
+
+<script>
+function applyDiscount() {
+    const orderId = document.getElementById("orderId").value;
+    const orderNo = parseInt(document.getElementById("orderNo").value);
+    const discountId = parseInt(document.getElementById("discountId").value);
+
+    const url = `http://127.0.0.1:5000/api/orders/${orderId}/apply-discount`;
+
+    const payload = {
+        discountID: discountId,
+        orderNo: orderNo
+    };
+
+    fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json().then(data => ({ status: res.status, body: data })))
+    .then(response => {
+        const box = document.getElementById("resultBox");
+        const err = document.getElementById("errorBox");
+
+        if (response.status === 200) {
+            err.style.display = "none";
+            box.style.display = "block";
+            box.innerHTML = `
+                <strong>${response.body.message}</strong><br><br>
+                <b>Order Total:</b> ${response.body.order.TotalAmount}<br>
+                <b>Item PriceAtPurchase:</b> ${response.body.orderItem.PriceAtPurchase}<br>
+                <b>PricePerItem:</b> ${response.body.orderItem.PricePerItem}<br>
+                <b>Quantity:</b> ${response.body.orderItem.Quantity}
+            `;
+        } else {
+            box.style.display = "none";
+            err.style.display = "block";
+            err.innerHTML = `<strong>Error:</strong> ${response.body.error}`;
+        }
+    })
+    .catch(error => {
+        const err = document.getElementById("errorBox");
+        err.style.display = "block";
+        err.innerHTML = "Connection error: " + error;
+    });
+}
+</script>
+
+</body>
+</html>
