@@ -112,47 +112,67 @@ def apply_discount(order_id):
     if not order_item:
         return jsonify({"error": "Không tìm thấy sản phẩm trong đơn hàng"}), 404
 
-    # 2. Thử áp dụng mã (INSERT vào DB)
+    # 2. Gọi stored procedure ApplyDiscountLogic
+    conn = get_connection()
     try:
-        sql = """
-            INSERT INTO DiscountApply(DiscountID, OrderNo, OrderID)
-            VALUES (%s, %s, %s)
-        """
-        execute(sql, [discount_id, order_no, order_id])
-        
-        # --- TRƯỜNG HỢP 1: THÀNH CÔNG (Lần bấm đầu tiên) ---
-        message = "Áp dụng mã giảm giá thành công!"
-        status_code = 200
+        cursor = conn.cursor()
 
-    except Exception as e:
-        error_str = str(e)
-        # --- TRƯỜNG HỢP 2: ĐÃ TỒN TẠI (Lần bấm thứ hai) ---
-        # Lỗi 1062 là Duplicate entry (trùng khóa chính)
-        # Lỗi "Discount already applied" là do Trigger/Procedure bắn ra
-        if "1062" in error_str or "Discount already applied" in error_str:
-            return jsonify({
-                "status": "error",
-                "message": "Mã này đã được áp dụng cho sản phẩm này rồi!"
-            }), 409 # 409 Conflict: Báo hiệu cho Frontend biết là dữ liệu bị trùng
-        
-        # Các lỗi khác (như hết hạn, hết lượt dùng...)
-        return jsonify({"error": error_str}), 400
+        try:
+            cursor.callproc("ApplyDiscountLogic", [discount_id, order_id, order_no])
+            conn.commit()
 
-    # 3. Lấy lại dữ liệu mới nhất để cập nhật giao diện
+        except Exception as e:
+            error_str = str(e)
+
+            # Các lỗi có MESSAGE_TEXT từ SIGNAL SQLSTATE
+            if "Discount already applied" in error_str:
+                return jsonify({
+                    "status": "error",
+                    "message": "Mã giảm giá này đã áp dụng rồi!"
+                }), 409
+
+            if "Discount expired" in error_str:
+                return jsonify({
+                    "status": "error",
+                    "message": "Mã giảm giá đã hết hạn!"
+                }), 400
+
+            if "Discount max applications reached" in error_str:
+                return jsonify({
+                    "status": "error",
+                    "message": "Đã đạt số lần sử dụng tối đa cho mã này!"
+                }), 400
+
+            # Lỗi trùng trong DiscountApply (cũng có thể xảy ra)
+            if "1062" in error_str:
+                return jsonify({
+                    "status": "error",
+                    "message": "Mã giảm giá đã được áp dụng trước đó!"
+                }), 409
+
+            return jsonify({"error": error_str}), 400
+
+    finally:
+        conn.close()
+
+    # 3. Lấy dữ liệu sau khi procedure cập nhật
     updated_item = query_one(
         """
         SELECT OrderNo, OrderID, PricePerItem, Quantity, PriceAtPurchase
-        FROM OrderItem WHERE OrderID = %s AND OrderNo = %s
+        FROM OrderItem
+        WHERE OrderID = %s AND OrderNo = %s
         """,
         [order_id, order_no],
     )
+
     updated_order = query_one(
-        "SELECT OrderID, TotalAmount FROM `Order` WHERE OrderID = %s", [order_id]
+        "SELECT OrderID, TotalAmount FROM `Order` WHERE OrderID = %s",
+        [order_id]
     )
 
     return jsonify({
         "status": "success",
-        "message": message,
+        "message": "Áp dụng mã giảm giá thành công!",
         "orderItem": updated_item,
-        "order": updated_order,
-    }), status_code
+        "order": updated_order
+    }), 200

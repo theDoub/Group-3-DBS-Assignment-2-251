@@ -110,7 +110,7 @@ function applyDiscount() {
         } else {
             box.style.display = "none";
             err.style.display = "block";
-            err.innerHTML = `<strong>Error:</strong> ${response.body.error}`;
+            err.innerHTML = `<strong>Error:</strong> ${response.body.message}`;
         }
     })
     .catch(error => {
