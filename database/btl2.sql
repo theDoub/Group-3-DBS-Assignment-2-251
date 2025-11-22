@@ -748,3 +748,5 @@ SET PriceAtPurchase = PricePerItem * Quantity
 WHERE PriceAtPurchase IS NULL;
 SELECT OrderID, FormatID, PricePerItem, PriceAtPurchase
 FROM OrderItem;
+INSERT INTO Account(AccountID, AccountType, Username, Email, PasswordHash, Status)
+VALUES ('ACC9999', 'Customer', 'test', 'test@gmail.com', '123456', 'active');

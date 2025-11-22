@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Book4U - Order Detail</title>
+<style>
+    body { font-family: Arial; background: #f1f5f9; padding: 20px; }
+    .header {
+        background: #007bff;
+        padding: 15px;
+        color: white;
+        font-size: 20px;
+        text-align: center;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 600px;
+        margin: auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background: #007bff;
+        padding: 12px;
+        width: 100%;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .result, .error {
+        margin-top: 20px;
+        padding: 12px;
+        border-radius: 6px;
+        display: none;
+    }
+    .result { background: #eaffea; color: #0f7c09; }
+    .error { background: #ffe5e5; color: #b30000; }
+</style>
+</head>
+<body>
+
+<div class="header">Order Detail</div>
+
+<div class="container">
+    <h3>Apply Discount</h3>
+
+    <input id="orderId" value="ORD00001">
+    <input id="orderNo" value="1">
+    <input id="discountId" value="1">
+
+    <button onclick="applyDiscount()">Apply Discount</button>
+
+    <div id="result" class="result"></div>
+    <div id="error" class="error"></div>
+
+</div>
+
+<script>
+function applyDiscount() {
+    const orderId = document.getElementById("orderId").value;
+    const orderNo = parseInt(document.getElementById("orderNo").value);
+    const discountId = parseInt(document.getElementById("discountId").value);
+
+    fetch(`http://127.0.0.1:5000/api/orders/${orderId}/apply-discount`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discountID: discountId, orderNo: orderNo })
+    })
+    .then(res => res.json().then(body => ({ status: res.status, body })))
+    .then(r => {
+        const ok = document.getElementById("result");
+        const er = document.getElementById("error");
+
+        if (r.status === 200) {
+            er.style.display = "none";
+            ok.style.display = "block";
+            ok.innerHTML = `
+                <strong>${r.body.message}</strong><br><br>
+                <b>Total:</b> ${r.body.order.TotalAmount}<br>
+                <b>Item PriceAtPurchase:</b> ${r.body.orderItem.PriceAtPurchase}
+            `;
+        } else {
+            ok.style.display = "none";
+            er.style.display = "block";
+            er.innerHTML = "<b>Error:</b> " + (r.body.message || r.body.error);
+        }
+    });
+}
+</script>
+
+</body>
+</html>
