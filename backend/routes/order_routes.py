@@ -5,6 +5,7 @@ from routes import order_bp
 from db import get_connection, query_all, query_one, execute
 
 
+
 @order_bp.get("")
 def list_orders():
     """
@@ -176,3 +177,97 @@ def apply_discount(order_id):
         "orderItem": updated_item,
         "order": updated_order
     }), 200
+
+
+##
+@order_bp.post("")
+def create_order():
+    """
+    Tạo order mới (trống, chưa có item).
+    Được gọi khi user vào home.html lần đầu.
+    """
+    conn = get_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Create new order with status pending and 0 total
+        cursor.execute(
+            "INSERT INTO `Order` (AccountID, OrderDate, Status, TotalAmount) VALUES ('ACC0001', NOW(), 'pending', 0)"
+        )
+        conn.commit()
+
+        # Get the most recent OrderID (ordered by OrderDate DESC, then by insertion order)
+        order = query_one(
+            "SELECT OrderID FROM `Order` ORDER BY OrderDate DESC, OrderID DESC LIMIT 1"
+        )
+        
+        return jsonify({"orderID": order["OrderID"], "message": "Order created"}), 201
+        
+    finally:
+        cursor.close()
+        conn.close()
+
+@order_bp.post("/<order_id>/items")
+def add_order_item(order_id):
+    """
+    Thêm item vào order hiện tại.
+    """
+    data = request.get_json() or {}
+    book_id = data.get("bookId")
+    quantity = data.get("quantity", 1)
+
+    if not book_id or quantity < 1:
+        return jsonify({"error": "bookId and quantity required"}), 400
+
+    conn = get_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get edition for this book
+        cursor.execute(
+            "SELECT EditionID FROM Edition WHERE BookID = %s LIMIT 1",
+            [book_id]
+        )
+        edition = cursor.fetchone()
+        
+        if not edition:
+            return jsonify({"error": "Edition not found"}), 404
+
+        edition_id = edition["EditionID"]
+        # Get format from edition
+        cursor.execute(
+            "SELECT FormatID FROM Format WHERE EditionID = %s LIMIT 1",
+            [edition_id]
+        )
+        format_data = cursor.fetchone()
+        
+        if not format_data:
+            return jsonify({"error": "Format not found"}), 404
+
+        format_id = format_data["FormatID"]
+
+        # Insert order item
+        cursor.execute(
+            "INSERT INTO OrderItem (OrderID, FormatID, Quantity) VALUES (%s, %s, %s)",
+            [order_id, format_id, quantity]
+        )
+        conn.commit()
+
+        # Update order total
+        # cursor.execute(
+        #     "SELECT SUM(PriceAtPurchase) as Total FROM OrderItem WHERE OrderID = %s",
+        #     [order_id]
+        # )
+        # total_result = cursor.fetchone()
+        # total = total_result["Total"] or 0
+        
+        # cursor.execute("UPDATE `Order` SET TotalAmount = %s WHERE OrderID = %s", [total, order_id])
+        # conn.commit()
+
+        
+
+        return jsonify({"message": "Item added to order", "orderID": order_id}), 201
+        
+    finally:
+        cursor.close()
+        conn.close()

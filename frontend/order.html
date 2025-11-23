@@ -46,6 +46,34 @@
     }
     .result { background: #eaffea; color: #0f7c09; }
     .error { background: #ffe5e5; color: #b30000; }
+
+
+    /*  */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+    tr:hover {
+        background: #f5f5f5;
+    }
+
+
+
 </style>
 </head>
 <body>
@@ -65,6 +93,22 @@
     <div id="error" class="error"></div>
 
 </div>
+
+<!--  -->
+<table id="itemsTable">
+    <h3 style="text-align:center;">Order Items</h3>
+    <thead>
+        <tr>
+            <th>Order No</th>
+            <th>Format ID</th>
+            <th>Quantity</th>
+            <th>Price Per Item</th>
+            <th>Price at Purchase</th>
+        </tr>
+    </thead>
+    <tbody id="itemsTable"></tbody>
+</table>
+
 
 <script>
 function applyDiscount() {
@@ -97,6 +141,30 @@ function applyDiscount() {
         }
     });
 }
+
+
+function loadOrder() {
+    const orderId = document.getElementById("orderId").value;
+
+    fetch(`http://127.0.0.1:5000/api/orders/${orderId}`)
+        .then(res => res.json())
+        .then(order => {
+            const itemsHtml = order.items.map(item => `
+                <tr>
+                    <td>${item.OrderNo}</td>
+                    <td>${item.FormatID}</td>
+                    <td>${item.Quantity}</td>
+                    <td>$${item.PricePerItem}</td>
+                    <td>$${item.PriceAtPurchase}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById("itemsTable").innerHTML = itemsHtml;
+        })
+        .catch(err => console.error("Error loading order:", err));
+}
+
+loadOrder();
 </script>
 
 </body>

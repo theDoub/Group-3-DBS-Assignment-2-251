@@ -8,8 +8,15 @@ from routes.order_routes import order_bp
 
 app = Flask(__name__)
 
-# Enable CORS for all routes
-CORS(app, resources={r"/*": {"origins": "*"}})
+# Enable CORS for all routes 
+# CORS(app, resources={r"/*": {"origins": "*"}})
+
+##
+# Allow all origins including file:// and localhost
+CORS(app, resources={r"/*": {"origins": ["*", "null"]}})
+
+# OR more permissive:
+CORS(app, supports_credentials=True)
 
 # Register blueprints
 app.register_blueprint(auth_bp)

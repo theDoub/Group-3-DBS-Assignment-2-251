@@ -17,18 +17,23 @@ def list_books():
     category_name = request.args.get("category")
     sort = request.args.get("sort")
 
+
+    # --modified
     base_sql = """
         SELECT 
             B.BookID,
             B.Title,
             B.Description,
             MIN(E.Price) AS MinPrice,
-            GROUP_CONCAT(DISTINCT C.Name ORDER BY C.Name SEPARATOR ', ') AS Categories
+            GROUP_CONCAT(DISTINCT C.Name ORDER BY C.Name SEPARATOR ', ') AS Categories,
+            COALESCE(GROUP_CONCAT(DISTINCT F.FormatType ORDER BY F.FormatType SEPARATOR ', '), 'No editions available') AS FormatType
         FROM Book B
         LEFT JOIN Edition E ON B.BookID = E.BookID
+        LEFT JOIN Format F ON E.EditionID = F.EditionID
         LEFT JOIN BookCategory BC ON B.BookID = BC.BookID
         LEFT JOIN Category C ON BC.CategoryID = C.CategoryID
     """
+
     params = []
     conditions = []
 
@@ -39,7 +44,7 @@ def list_books():
     if conditions:
         base_sql += " WHERE " + " AND ".join(conditions)
 
-    base_sql += " GROUP BY B.BookID, B.Title, B.Description "
+    base_sql += " GROUP BY B.BookID, B.Title, B.Description"
 
     if sort == "price_asc":
         base_sql += " ORDER BY MinPrice ASC "

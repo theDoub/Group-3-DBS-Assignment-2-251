@@ -77,7 +77,31 @@ BEGIN
     WHERE OrderID = p_OrderID AND OrderNo = p_OrderNo;
 
 END //
+
+CREATE TRIGGER trg_Discountapply_Validation_Insert
+BEFORE INSERT ON DiscountApply
+FOR EACH ROW
+BEGIN
+    CALL ApplyDiscountLogic(
+        NEW.DiscountID, 
+        NEW.OrderID, 
+        NEW.OrderNo
+    );
+END //
+
+
+CREATE TRIGGER trg_Discountapply_Validation_Update
+BEFORE UPDATE ON DiscountApply
+FOR EACH ROW
+BEGIN
+	CALL ApplyDiscountLogic(
+        NEW.DiscountID, 
+        NEW.OrderID, 
+        NEW.OrderNo
+    );
+END //
+
 DELIMITER ;
 
-DELETE FROM DiscountApply;
-UPDATE OrderItem SET PriceAtPurchase = PricePerItem * Quantity;
+-- DELETE FROM DiscountApply;
+-- UPDATE OrderItem SET PriceAtPurchase = PricePerItem * Quantity;
