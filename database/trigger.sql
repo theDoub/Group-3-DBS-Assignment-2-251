@@ -367,7 +367,7 @@ BEGIN
 	DECLARE fmtType ENUM('Printed', 'Audio', 'E');
     
     SELECT FormatType INTO fmtType
-    FROM fmtType
+    FROM Format
     WHERE FormatID = NEW.FormatID;
     -- Ensure the superclass exists
     IF fmtType IS NULL THEN

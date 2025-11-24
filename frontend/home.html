@@ -44,24 +44,42 @@
 
 <div class="header">Book4U Store</div>
 
+<button class="see-orders-btn" onclick="goToOrders()">See My Orders</button>
+<button class="see-cart-btn" onclick="goToCart()">Go to My Cart</button>
 <div id="books" class="book-list"></div>
 
 <script>
 let currentOrderID = null;
 
-function createOrder() {
-    fetch("http://127.0.0.1:5000/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({})
-    })
-    .then(res => res.json())
-    .then(data => {
-        currentOrderID = data.orderID;
-        console.log("Order created:", currentOrderID);
-        loadBooks();
-    });
+const user = JSON.parse(localStorage.getItem("user"));
+// If not logged in, redirect to login page
+if (!user || !user.accountID) {
+    alert("Please log in");
+    window.location.href = "login.html";
 }
+const accountId = user.accountID; // Extract accountId from user object
+console.log("Logged in with current user accountId:", accountId);
+
+function goToOrders() {
+    window.location.href = "order.html";
+}
+function goToCart() {
+    window.location.href = "cart.html";
+}
+
+// function createOrder() {
+//     fetch("http://127.0.0.1:5000/api/orders", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({})
+//     })
+//     .then(res => res.json())
+//     .then(data => {
+//         currentOrderID = data.orderID;
+//         console.log("Order created:", currentOrderID);
+//         loadBooks();
+//     });
+// }
 function loadBooks() {
     fetch("http://127.0.0.1:5000/api/books")
         .then(res => res.json())
@@ -72,46 +90,71 @@ function loadBooks() {
             container.innerHTML = "";
 
             data.forEach(b => {
+                let formatsHtml = '';
+                if (b.Formats) {
+                    const formats = typeof b.Formats === 'string' ? JSON.parse(b.Formats) : b.Formats;
+                    if (Array.isArray(formats)) {
+                        formatsHtml = formats.map(f => `
+                            <div style="margin: 8px 0; padding: 8px; background: #f0f0f0; border-radius: 4px;">
+                                <p style="margin: 4px 0;"><b>${f.FormatType}</b> (ID: ${f.FormatID})</p>
+                                <button class="btn" onclick="buy('${f.FormatID}')" style="width: 100%; padding: 8px;">Buy</button>
+                            </div>
+                        `).join('');
+                    }
+                }
+
                 container.innerHTML += `
                     <div class="card">
                         <h3>${b.Title}</h3>
-                        <p><b>Format:</b> ${b.FormatType}</p>
                         <p><b>Categories:</b> ${b.Categories}</p>
                         <p><b>Price:</b> $${b.MinPrice}</p>
-                        <button class="btn" onclick="buy('${b.BookID}')">Mua ngay</button>
+                        ${formatsHtml}
                     </div>
                 `;
             });
         });
 }
 
-function buy(bookId) {
+// function buy(bookId) {
+//     const quantity = prompt("Enter quantity:", "1");
+//     if (!quantity || isNaN(quantity) || quantity < 1) return;
+
+//     window.location.href = `order.html?orderId=${currentOrderID}`;
+//     // Add item to current order
+//     fetch(`http://127.0.0.1:5000/api/orders/${currentOrderID}/items`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//             bookId: bookId,
+//             quantity: parseInt(quantity)
+//         })
+//     })
+//     .then(res => res.json())
+//     .then(data => {
+//         if (data.message) {
+            
+//             alert("Item added to order!");
+//         } else {
+//             alert("Error: " + (data.error || data.message));
+//         }
+//     });
+// }
+
+// if (!currentOrderID) {
+//     createOrder();
+// }
+
+function buy(formatId) {
     const quantity = prompt("Enter quantity:", "1");
     if (!quantity || isNaN(quantity) || quantity < 1) return;
 
-    window.location.href = `order.html?orderId=${currentOrderID}`;
-    // Add item to current order
-    fetch(`http://127.0.0.1:5000/api/orders/${currentOrderID}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            bookId: bookId,
-            quantity: parseInt(quantity)
-        })
+    fetch('http://127.0.0.1:5000/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId, formatId, quantity })
     })
     .then(res => res.json())
-    .then(data => {
-        if (data.message) {
-            
-            alert("Item added to order!");
-        } else {
-            alert("Error: " + (data.error || data.message));
-        }
-    });
-}
-
-if (!currentOrderID) {
-    createOrder();
+    .then(data => alert('Item added to cart!'));
 }
 
 loadBooks();

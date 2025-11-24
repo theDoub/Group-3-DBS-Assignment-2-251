@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book4U - Shopping Cart</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            margin: 20px; 
+        }
+        .cart-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        .header { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        
+        /*  */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+    tr:hover {
+        background: #f5f5f5;
+    }
+
+
+        .item-info { flex: 1; }
+        .item-actions { display: flex; gap: 10px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        .total { font-size: 18px; font-weight: bold; margin-top: 20px; text-align: right; }
+        .checkout-btn { background: #28a745; padding: 12px 30px; font-size: 16px; }
+        .back-btn { background: #6c757d; }
+
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <div class="header">Shopping Cart</div>
+        <button class="back-btn" onclick="goHome()">Back to Home</button>
+        
+        <h3>Cart Items</h3>
+    <table>
+        <thread>
+            <tr>
+                <th>Item No</th>
+                <th>Book Title</th>
+                <th>Format Type</th>
+                <th>Quantity</th>
+                <th>Price Per Item</th>
+                <th>Time Added</th>
+            </tr>
+        </thread>
+        <tbody id="itemsTable">
+            <!-- Order items will be populated here -->
+            <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+    </table>
+
+
+        <div class="total">Total: $<span id="cartTotal">0</span></div>
+        
+        <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem("user"));
+        // If not logged in, redirect to login page
+        if (!user || !user.accountID) {
+            alert("Please log in");
+            window.location.href = "login.html";
+        }
+        const accountId = user.accountID;
+
+        function loadCart() {
+            fetch(`http://127.0.0.1:5000/api/cart?accountId=${accountId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let total = 0;
+                    console.log("Cart data:", data);
+                     const itemsHtml = data.map(item => {
+                        total += item.PricePerItem * item.Quantity;
+                        return `
+                        <tr>
+                            <td>${item.ItemNo}</td>
+                            <td>${item.BookTitle}</td>
+                            <td>${item.FormatType}-${item.FormatID}</td>
+                            <td>${item.Quantity}</td>
+                            <td>$${item.PricePerItem}</td>
+                            <td>${item.TimeAdded}</td>
+                            <td>
+                                <button onclick="removeItem(${item.CartID}, ${item.ItemNo})">Remove</button>
+                            </td>
+                        </tr>
+                        `;}
+                    ).join('');
+                    document.getElementById("cartTotal").innerText = total;
+                    document.getElementById("itemsTable").innerHTML = itemsHtml;
+                });
+        }
+
+        function removeItem(cartId, itemNo) {
+            if (!confirm("Are you sure you want to remove this item from the cart?")) {
+                return;
+            }
+            fetch(`http://127.0.0.1:5000/api/cart/${itemNo}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cartId: cartId })
+            }).then(res => res.json()).then(() => loadCart());
+        }
+
+        function goHome() {
+            window.location.href = 'home.html';
+        }
+
+        function checkout() {
+            fetch('http://127.0.0.1:5000/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accountId: accountId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.orderId) {
+                    // Order created successfully, redirect to order details
+                    console.log("Order created with ID:", data.orderId);
+                    window.location.href = `order.html?orderId=${data.orderId}`;
+                } else {
+                    alert('Error creating order: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+
+        loadCart();
+    </script>
+</body>
+</html>
