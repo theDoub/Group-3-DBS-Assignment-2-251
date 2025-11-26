@@ -17,19 +17,17 @@ http://127.0.0.1:5000
 ```
 
 ---
-## 🌐 2. Start Frontend
+## 🌐 2. Start Frontend <- Currently Should Do This For Testing
 
 Open **Terminal 2**:
 ```bash
 cd frontend
 ```
-Run your frontend by opening:
+Run your frontend by first opening:
 ```
-index.html
+login.html
 ```
-(or any other frontend file has implemented).
-
-You can simply open the file in a browser or use a live server extension.
+Opening any other html files before login will send you back to login.html anyway.
 
 ---
 ## 📌 3. Access the Application
@@ -42,6 +40,8 @@ http://127.0.0.1:5000
 ```
 
 This address corresponds to your backend endpoint or UI depending on how your frontend is integrated.
+
+Currently, if you access directly to the web address, it will simply print a json string.
 
 ---
 ## ✔ Notes
