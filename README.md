@@ -27,7 +27,9 @@ Run your frontend by first opening:
 ```
 login.html
 ```
-Opening any other html files before login will send you back to login.html anyway.
+Opening any other html files before login.html will send you back to login.html anyway.
+
+You can simply open the file in a browser or use a live server extension.
 
 ---
 ## 📌 3. Access the Application
