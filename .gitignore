@@ -1,0 +1,16 @@
+# Bỏ qua thư mục môi trường ảo
+venv/
+env/
+.env
+
+# Bỏ qua các file rác của Python (compiled files)
+__pycache__/
+*.pyc
+*.pyo
+
+# Bỏ qua cài đặt của VS Code
+.vscode/
+
+# Bỏ qua file hệ thống
+.DS_Store
+Thumbs.db

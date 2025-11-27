@@ -1,603 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Book4U - Order Detail</title>
-<style>
-    body { font-family: Arial; background: #f1f5f9; padding: 20px; }
-    .header {
-        background: #007bff;
-        padding: 15px;
-        color: white;
-        font-size: 20px;
-        text-align: center;
-        border-radius: 10px;
-        margin-bottom: 25px;
-    }
-    .container {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        width: 80%;
-        margin: auto;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-    }
-    button {
-        background: #007bff;
-        padding: 12px;
-        width: 100%;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-    .result, .error {
-        margin-top: 20px;
-        padding: 12px;
-        border-radius: 6px;
-        display: none;
-    }
-    .result { background: #eaffea; color: #0f7c09; }
-    .error { background: #ffe5e5; color: #b30000; }
-
-
-    /*  */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background: white;
-        border-radius: 6px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-    th {
-        background: #007bff;
-        color: white;
-        font-weight: bold;
-    }
-    tr:hover {
-        background: #f5f5f5;
-    }
-
-/*  */
-    .order-info {
-        background: #e7f3ff;
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        border-left: 4px solid #007bff
-    }
-
-    .order-info p {
-        margin: 8px 0;
-        font-size: 16px;
-    }
-
-    .discount-btn {
-        background: #28a745;
-        padding: 8px 12px;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .discount-btn:hover {
-        background: #218838;
-    }
-
-    .back-btn {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #6c757d;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-
-    .back-btn:hover {
-        background: #5a6268;
-    }
-
-    /* Modal */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.4);
-    }
-
-    .modal-content {
-        background-color: white;
-        margin: 5% auto;
-        padding: 20px;
-        border-radius: 10px;
-        width: 700px;
-        max-width: 90%;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: #007bff;
-    }
-
-    .close-modal {
-        float: right;
-        font-size: 28px;
-        font: optional;
-        cursor: pointer;
-        color: #aaa;
-    }
-
-    .close-modal:hover {
-        color: black;
-    }
-    .discount-list {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-
-    .discount-item {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        margin-bottom: 10px;
-        background: #f9f9f9;
-    }
-    .discount-item p {
-        margin: 5px 0;
-        font-size: 14px;
-    }
-    .discount-item-btn {
-        background: #007bff;
-        color: white;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-    .discount-item-btn:hover {
-        background: #0056b3;
-    }
-    /* Order List */
-    .orders-list-container {
-        padding: 25px;
-    }
-    .orders-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
-    .order-card {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .order-card h3 {
-        margin: 0 0 10px 0;
-        color: #007bff;
-    }
-    .order-card p {
-        margin: 8px 0;
-        color: #666;
-    }
-     .see-details-btn {
-        background: #007bff;
-        padding: 10px;
-        color: white;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 15px;
-    }
-    .see-details-btn:hover {
-        background: #0056b3;
-    }
-
-</style>
+    <meta charset="UTF-8">
+    <title>My Orders - Book4U</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        body { background: #f1f5f9; }
+        .status-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .status-confirmed { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .status-cancelled { background: #f8d7da; color: #842029; border: 1px solid #f5c6cb; }
+        
+        .discount-card { cursor: pointer; border: 1px dashed #007bff; transition: all 0.2s; background: #fff; }
+        .discount-card:hover { background: #e7f3ff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .order-card { transition: transform 0.2s; border: none; border-radius: 10px; }
+        .order-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
 </head>
 <body>
-<a href="home.html"><button class="back-btn">Back to Home</button></a>
-<a href="cart.html"><button class="back-btn">Back to Cart</button></a>
-    <!-- For Customer Details -->
-<div class="header" id="pageHeader"></div>
 
-<!-- Orders List Section (NEW) -->
-<div id="ordersList" class="orders-list-container">
-    <div class="header">My Orders</div>
-    <div id="ordersContainer" class="orders-grid"></div>
-</div>
+<nav class="navbar navbar-light bg-white shadow-sm mb-4 sticky-top">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <a class="btn btn-outline-primary me-3 border-0" href="home.html"><i class="bi bi-arrow-left"></i> Back</a>
+            <span class="navbar-brand mb-0 h1 fw-bold text-primary"><i class="bi bi-receipt-cutoff"></i> Order Management</span>
+        </div>
+        <div class="d-flex">
+            <a href="cart.html" class="btn btn-light text-primary position-relative">
+                <i class="bi bi-cart3"></i> Cart
+            </a>
+        </div>
+    </div>
+</nav>
 
-<div id="orderDetails" class="container" style="display:none;">
+<div class="container" style="max-width: 1000px;">
     
-    <button class="back-btn" onclick="backToOrdersList()">Back to Orders List</button>
-
-    <div class="order-info">
-        <p><b>Order ID:</b> <span id="displayOrderId">-</span></p>
-        <p><b>Order Date:</b> <span id="displayOrderDate">-</span></p>
-        <p><b>Status:</b> <span id="displayStatus">-</span></p>
-        <p><b>Total Amount:</b> $<span id="displayTotal">-</span></p>
+    <div id="ordersListSection">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-secondary"><i class="bi bi-list-check"></i> My Orders History</h3>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadOrdersList()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+        <div id="ordersContainer" class="row g-4"></div>
     </div>
 
-    <h3>Order Items</h3>
-    <table>
-        <thread>
-            <tr>
-                <th>Order No</th>
-                <th>Book Title</th>
-                <th>Format Type</th>
-                <th>Quantity</th>
-                <th>Price Per Item</th>
-                <th>Price At Purchase</th>
-                <th>Applied Discount</th>
-            </tr>
-        </thread>
-        <tbody id="itemsTable">
-            <!-- Order items will be populated here -->
-            <tr><td colspan="6">Loading...</td></tr>
-        </tbody>
-    </table>
+    <div id="orderDetailsSection" style="display: none;">
+        <button class="btn btn-secondary mb-3 shadow-sm" onclick="backToOrders()"><i class="bi bi-arrow-left"></i> Back to List</button>
+        
+        <div class="card border-0 shadow-lg mb-4 overflow-hidden rounded-3">
+            <div class="card-header bg-primary text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="opacity-75 small">ORDER ID</span>
+                        <h5 class="mb-0 fw-bold">#<span id="d_orderId"></span></h5>
+                    </div>
+                    <span id="d_status" class="badge bg-light text-primary fs-6 px-3 py-2 rounded-pill">Status</span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Order Date</small>
+                        <strong id="d_date" class="fs-5"></strong>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted d-block">Total Amount</small>
+                        <span class="fs-2 text-primary fw-bold">$<span id="d_total"></span></span>
+                    </div>
+                </div>
 
-    <div id="result" class="result"></div>
-    <div id="error" class="error"></div>
+                <h5 class="mb-3 border-bottom pb-2">Order Items</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Format</th>
+                                <th class="text-center">Qty</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                                <th>Discount</th>
+                                <th class="text-end">Voucher</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTable"></tbody>
+                    </table>
+                </div>
 
-
-</div>
-
-<!-- Discount Modal -->
-<div id="discountModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeDiscountModal()">&times;</span>
-        <div class="modal-header">Select a Discount</div>
-        <div class="discount-list" id="discountList">
-            <p style="text-align:center;">Loading discounts...</p>
+                <div id="orderActions" class="mt-4 pt-3 border-top text-end d-flex justify-content-end gap-2"></div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- <div class="container">
-    <h3>Apply Discount</h3>
+<div class="modal fade" id="discountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-ticket-perforated"></i> Apply Voucher</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <p class="text-muted small mb-3">Select a voucher to apply for this item:</p>
+                <div id="discountList" class="d-flex flex-column gap-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <input id="orderId" value="ORD00001">
-    <input id="orderNo" value="1">
-    <input id="discountId" value="1">
-
-    <button onclick="applyDiscount()">Apply Discount</button>
-
-    <div id="result" class="result"></div>
-    <div id="error" class="error"></div>
-
-</div> -->
-
-
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-let currentOrderNo = null;  // Store which item is being discounted
-let currentOrderId = null;
-const user = JSON.parse(localStorage.getItem("user"));
-// If not logged in, redirect to login page
-if (!user || !user.accountID) {
-    alert("Please log in");
-    window.location.href = "login.html";
-}
-const accountId = user.accountID; // Extract accountId from user object
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) window.location.href = "login.html";
 
-// Initialize
-loadCustomerName();
-loadOrdersList();
+    // Global variables
+    let currentOrderId = null;
+    let currentOrderNo = null;
+    let currentItemPrice = 0; // Giá item để tính discount
+    let currentItemQty = 1;
+    let currentOrderTotal = 0; // Tổng bill để check điều kiện
+    
+    let discountModalObj = new bootstrap.Modal(document.getElementById('discountModal'));
 
-function loadCustomerName() {
-    document.getElementById("pageHeader").innerText = `Customer: ${user.username}`;
-}
-
-function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-}
+    const paramOrderId = urlParams.get('orderId');
 
-function showMessage(msg, type){
-    const result = document.getElementById("result");
-    const error = document.getElementById("error");
-    if(type === "success"){
-        error.style.display = "none";
-        result.style.display = "block";
-        result.innerHTML = msg;
+    if (paramOrderId) {
+        showOrderDetail(paramOrderId);
     } else {
-        result.style.display = "none";
-        error.style.display = "block";
-        error.innerHTML = msg;
+        loadOrdersList();
     }
-}
-//
-function backToOrdersList() {
-    window.location.href = `order.html?accountId=${accountId}`;
-}
 
-function loadOrdersList() {
-    const orderId = new URLSearchParams(window.location.search).get('orderId');
-        
-        if (!orderId) {
-            // Show orders list
-            fetch(`http://127.0.0.1:5000/api/orders?accountId=${accountId}`)
-                .then(res => res.json())
-                .then(data => {
-                    const container = document.getElementById('ordersContainer');
-                    container.innerHTML = '';
-                    console.log("--DEBUG Orders List API Response:", JSON.stringify(data, null, 2));
-                    data.forEach(order => {
-                        container.innerHTML += `
-                            <div class="order-card">
-                                <h3>Order ${order.OrderID}</h3>
-                                <p><b>Date:</b> ${order.OrderDate}</p>
-                                <p><b>Total:</b> $${order.TotalAmount}</p>
-                                <p><b>Status:</b> ${order.Status}</p>
-                                <button class="see-details-btn" onclick="viewOrderDetails('${order.OrderID}')">See Details</button>
+    function backToOrders() {
+        document.getElementById("ordersListSection").style.display = 'block';
+        document.getElementById("orderDetailsSection").style.display = 'none';
+        window.history.pushState({}, "", "order.html");
+        loadOrdersList();
+    }
+
+    function loadOrdersList() {
+        fetch(`http://127.0.0.1:5000/api/orders?accountId=${user.accountID}`)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '';
+            
+            if(data.length === 0) {
+                container.innerHTML = `<div class="col-12 text-center py-5 text-muted">You haven't placed any orders yet.</div>`;
+                return;
+            }
+            
+            data.forEach(o => {
+                let badgeClass = 'status-pending';
+                if(o.Status === 'confirmed') badgeClass = 'status-confirmed';
+                else if(o.Status === 'cancelled') badgeClass = 'status-cancelled';
+
+                container.innerHTML += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 order-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="card-title text-primary fw-bold">#${o.OrderID}</h5>
+                                    <span class="badge ${badgeClass} text-dark">${o.Status.toUpperCase()}</span>
+                                </div>
+                                <p class="card-text text-muted mb-1"><i class="bi bi-calendar3 me-2"></i> ${o.OrderDate}</p>
+                                <h3 class="fw-bold my-3">$${o.TotalAmount}</h3>
+                                <button onclick="showOrderDetail('${o.OrderID}')" class="btn btn-outline-primary w-100 mt-auto">
+                                    View Details <i class="bi bi-chevron-right"></i>
+                                </button>
                             </div>
-                        `;
-                    });
-                });
-        } else {
-            // Hide orders list, show order details
-            document.getElementById('ordersList').style.display = 'none';
-            document.getElementById('orderDetails').style.display = 'block';
-            loadOrder();
-        }
-}
-function viewOrderDetails(orderId) {
+                        </div>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    function showOrderDetail(orderId) {
         currentOrderId = orderId;
-        document.getElementById('ordersList').style.display = 'none';
-        document.getElementById('orderDetails').style.display = 'block';
-        window.location.href = `order.html?orderId=${orderId}`;
-        loadOrder();
-}
+        document.getElementById("ordersListSection").style.display = 'none';
+        document.getElementById("orderDetailsSection").style.display = 'block';
+        
+        document.getElementById("itemsTable").innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
 
+        fetch(`http://127.0.0.1:5000/api/orders/${orderId}`)
+        .then(res => res.json())
+        .then(order => {
+            document.getElementById("d_orderId").innerText = order.OrderID;
+            document.getElementById("d_status").innerText = order.Status.toUpperCase();
+            document.getElementById("d_date").innerText = order.OrderDate;
+            document.getElementById("d_total").innerText = order.TotalAmount;
+            
+            currentOrderTotal = parseFloat(order.TotalAmount); // Lưu tổng tiền
 
+            const tbody = document.getElementById("itemsTable");
+            tbody.innerHTML = order.items.map(item => {
+                const hasDiscount = item.AppliedDiscounts && item.AppliedDiscounts.trim().length > 0;
+                let actionBtn = '';
+                
+                if (order.Status === 'pending') {
+                    if (hasDiscount) {
+                        actionBtn = `<button onclick="removeDiscount(${item.OrderNo}, '${item.AppliedDiscounts}')" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Remove</button>`;
+                    } else {
+                        // Truyền thêm Giá và Qty vào để tính toán
+                        actionBtn = `<button onclick="openDiscountModal(${item.OrderNo}, ${item.PricePerItem}, ${item.Quantity})" class="btn btn-sm btn-success"><i class="bi bi-ticket-perforated"></i> Apply</button>`;
+                    }
+                } else {
+                    actionBtn = `<span class="text-muted small"><i class="bi bi-lock"></i> Locked</span>`;
+                }
 
-// Discount Modal
-function openDiscountModal(orderNo) {
-    currentOrderNo = orderNo;
-    document.getElementById("discountModal").style.display = "block";
-    loadAvailableDiscounts();
-}
+                return `
+                    <tr>
+                        <td class="fw-bold text-primary">${item.BookTitle}</td>
+                        <td><span class="badge bg-light text-dark border">${item.FormatType}</span></td>
+                        <td class="text-center">${item.Quantity}</td>
+                        <td class="text-muted text-decoration-line-through">$${item.PricePerItem}</td>
+                        <td class="fw-bold text-success">$${item.PriceAtPurchase}</td>
+                        <td>${hasDiscount ? `<span class="badge bg-warning text-dark"><i class="bi bi-tag-fill"></i> ${item.AppliedDiscounts}</span>` : '<small class="text-muted">-</small>'}</td>
+                        <td class="text-end">${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
 
-function closeDiscountModal() {
-    document.getElementById("discountModal").style.display = "none";
-    currentOrderNo = null;
-}
-function loadAvailableDiscounts() {
-    fetch("http://127.0.0.1:5000/api/orders/discounts")  // ← Fetch all discounts
+            const actionDiv = document.getElementById("orderActions");
+            if(order.Status === 'pending') {
+                actionDiv.innerHTML = `
+                    <button onclick="updateStatus('${order.OrderID}', 'cancelled')" class="btn btn-outline-danger btn-lg px-4">Cancel Order</button>
+                    <button onclick="updateStatus('${order.OrderID}', 'confirmed')" class="btn btn-success btn-lg px-4 shadow">Pay Now</button>
+                `;
+            } else {
+                actionDiv.innerHTML = `<div class="py-2 fw-bold text-secondary">Status: ${order.Status}</div>`;
+            }
+        });
+    }
+
+    function updateStatus(orderId, newStatus) {
+        let confirmTitle = newStatus === 'confirmed' ? 'Confirm Payment?' : 'Cancel Order?';
+        let btnColor = newStatus === 'confirmed' ? '#198754' : '#dc3545';
+
+        Swal.fire({
+            title: confirmTitle,
+            text: `Proceed to ${newStatus} order?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: btnColor,
+            confirmButtonText: 'Yes, Proceed'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(res => res.json())
+                .then(r => {
+                    Swal.fire('Success', r.message, 'success').then(() => showOrderDetail(orderId));
+                });
+            }
+        });
+    }
+
+    // --- LOGIC VOUCHER THÔNG MINH ---
+    function openDiscountModal(orderNo, pricePerItem, quantity) {
+        currentOrderNo = orderNo;
+        currentItemPrice = pricePerItem;
+        currentItemQty = quantity;
+
+        const listDiv = document.getElementById("discountList");
+        listDiv.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+        
+        discountModalObj.show();
+
+        fetch("http://127.0.0.1:5000/api/orders/discounts")
         .then(res => res.json())
         .then(discounts => {
-            const discountList = document.getElementById("discountList");
+            listDiv.innerHTML = '';
             
-            if (!discounts || discounts.length === 0) {
-                discountList.innerHTML = '<p style="text-align:center; color: red;">No discounts available</p>';
+            if(!discounts || discounts.length === 0) {
+                listDiv.innerHTML = '<p class="text-center text-muted">No vouchers available.</p>';
                 return;
             }
 
-            let html = '';
-            discounts.forEach(discount => {
-                html += `
-                    <div class="discount-item">
-                        ${discount.Conditions ? `<h3 style="margin: 0 0 10px 0">${discount.Conditions}</h3>` : ''}
-                        ${discount.Name ? `<h4 style="margin: 0 0 10px 0">${discount.Name}</h4>` : ''}
-                        
-                        <p><b>Discount ID:</b> ${discount.DiscountID}</p>
-                        <p><b>Type:</b> ${discount.Type}</p>
-                        <p><b>Value:</b> ${discount.Value}${discount.Type === 'percentage' ? '%' : '$'}</p>
-                        <button class="discount-item-btn" onclick="applyDiscountToItem('${discount.DiscountID}')">
-                            Apply
-                        </button>
-                    </div>
-                       `;
+            // 1. Kiểm tra điều kiện (Mock Logic based on Text)
+            const processed = discounts.map(d => {
+                let isValid = true;
+                let reason = "";
 
-            // E.g. what a discount looks like
-            // 50% off, max $20 <- Headline, to catch attention
-            // BLACKFRIDAY <- Name of discount
-            // Discount ID: 3
-            // Type: percentage
-            // Value: 50.00%
-            // If name and conditions exist, show them, else skip
+                // Giả lập logic kiểm tra text điều kiện
+                const cond = d.Conditions ? d.Conditions.toLowerCase() : "";
+
+                // Check: Over $50
+                if (cond.includes("over $50") && currentOrderTotal < 50) {
+                    isValid = false;
+                    reason = `Order total must be over $50 (Current: $${currentOrderTotal})`;
+                }
+                // Check: Buy 2
+                if (cond.includes("buy 2") && currentItemQty < 2) {
+                    isValid = false;
+                    reason = `Must buy at least 2 items (Current: ${currentItemQty})`;
+                }
+
+                // Tính tiền giảm (Estimated)
+                let saving = 0;
+                if (isValid) {
+                    if (d.Type === 'percentage') {
+                        saving = (currentItemPrice * d.Value) / 100;
+                    } else {
+                        saving = d.Value;
+                    }
+                    if (saving > currentItemPrice) saving = currentItemPrice;
+                }
+
+                return { ...d, isValid, reason, saving: parseFloat(saving) };
             });
-            discountList.innerHTML = html;
-        })
-        .catch(err => {
-            document.getElementById("discountList").innerHTML = '<p style="color: red;">Error loading discounts</p>';
+
+            // 2. Sắp xếp: Hợp lệ -> Giảm nhiều tiền nhất -> Tên
+            processed.sort((a, b) => {
+                if (a.isValid !== b.isValid) return b.isValid - a.isValid; 
+                return b.saving - a.saving;
+            });
+
+            // 3. Render ra UI
+            processed.forEach((d, index) => {
+                let cardClass = d.isValid ? "border-primary" : "bg-light opacity-75";
+                let clickAction = d.isValid ? `onclick="applyDiscount(${d.DiscountID})"` : "";
+                let badge = "";
+                
+                // Best deal badge
+                if (index === 0 && d.isValid) {
+                    cardClass = "border-warning bg-warning-subtle";
+                    badge = `<span class="badge bg-warning text-dark mb-2"><i class="bi bi-star-fill"></i> Recommended</span>`;
+                }
+
+                let statusHtml = "";
+                if (!d.isValid) {
+                    statusHtml = `<div class="text-danger small fw-bold"><i class="bi bi-exclamation-circle"></i> ${d.reason}</div>`;
+                } else {
+                    statusHtml = `<div class="text-success small fw-bold">Save ~$${d.saving.toFixed(2)}</div>`;
+                }
+
+                listDiv.innerHTML += `
+                    <div class="card discount-card p-3 mb-2 ${cardClass}" ${clickAction} style="${d.isValid ? 'cursor:pointer' : 'cursor:not-allowed'}">
+                        ${badge}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold ${d.isValid ? 'text-danger' : 'text-muted'}">${d.Name}</h6>
+                                <small class="text-muted d-block fst-italic">${d.Conditions || 'No conditions'}</small>
+                                ${statusHtml}
+                            </div>
+                            <div class="text-end">
+                                <span class="d-block fw-bold ${d.isValid ? 'text-primary' : 'text-muted'} fs-5">
+                                    ${d.Type === 'percentage' ? d.Value + '%' : '$' + d.Value} OFF
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         });
-}
-
-function applyDiscountToItem(discountId) {
-    const orderId = currentOrderId;
-    const orderNo = currentOrderNo;
-
-    fetch(`http://127.0.0.1:5000/api/orders/${orderId}/apply-discount`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            discountID: discountId, 
-            orderNo: orderNo,
-            orderID: orderId
-        })
-    })
-    .then(res => res.json().then(body => ({ status: res.status, body })))
-    .then(r => {
-        if (r.status === 200) {
-            closeDiscountModal();
-            showMessage(
-                `<b>✓ ${r.body.message}</b><br>`,
-                "success"
-            );
-            loadOrder();  // Reload to show updated prices
-        } else {
-            showMessage("<b>Error:</b> " + (r.body.message || r.body.error), "error");
-        }
-    });
-}
-
-function deleteDiscount(orderNo, discountId) {
-    const orderId = currentOrderId;
-    
-    if (!confirm("Are you sure you want to remove the discount?")) return;
-
-    fetch(`http://127.0.0.1:5000/api/orders/${orderId}/delete-discount`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            discountID: discountId,
-            orderNo: orderNo,
-            orderID: orderId
-        })
-    })
-    .then(res => res.json().then(body => ({ status: res.status, body })))
-    .then(r => {
-        if (r.status === 200) {
-            showMessage(
-                `<b>✓ ${r.body.message}</b><br>`,
-                "success"
-            );
-            loadOrder();  // Reload to show updated prices
-        } else {
-            showMessage("<b>Error:</b> " + (r.body.message || r.body.error), "error");
-        }
-    });
-}
-
-function deleteDiscountPrompt(orderNo, appliedDiscounts) {
-    const discountList = appliedDiscounts.split(',').map(d => d.trim());
-    const discountId = prompt(`Applied discounts: ${appliedDiscounts}\n\nEnter Discount ID to remove:`, "");
-    
-    if (!discountId) return;
-    
-    // Validate if entered discount is in the applied list
-    if (!discountList.includes(discountId)) {
-        showMessage("<b>Error:</b> This discount is not applied to this item", "error");
-        return;
-    }
-    
-    deleteDiscount(orderNo, discountId);
-}
-
-// Apply discount to order
-// function applyDiscount(OrderNo) {
-//     const orderId = getQueryParam("orderId");
-//     const discountId = prompt("Enter Discount ID:", "1");
-//     if(!discountId) return;
-
-//     fetch(`http://127.0.0.1:5000/api/orders/${orderId}/apply-discount`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ 
-//             discountID: discountId, 
-//             orderNo: orderNo 
-//         })
-//     })
-//     .then(res => res.json().then(body => ({ status: res.status, body })))
-//     .then(r => {
-//         const ok = document.getElementById("result");
-//         const er = document.getElementById("error");
-
-//         if (r.status === 200) {
-//             showMessage(
-//                 `<b>Success! ${r.body.message}</b><br>
-//                 New Price at Purchase: $${r.body.orderItem.PriceAtPurchase}<br>`,
-//                 "success"
-//             );
-//             loadOrder();  // ← Reload to show updated prices
-//         } else {
-//             showMessage("<b>Error:</b> " + (r.body.message || r.body.error), "error");
-//         }
-//     });
-// }
-
-
-function loadOrder() {
-    const orderId = getQueryParam("orderId");
-    currentOrderId = orderId;
-    console.log("...Loading orderId:", orderId);
-
-    if (!orderId) {
-        showMessage("No orderId specified in URL.", "error");
-        return;
     }
 
-    fetch(`http://127.0.0.1:5000/api/orders/${orderId}`)
-        .then(res => res.json())
-        .then(order => {
-            // Display order info
-            document.getElementById("displayOrderId").textContent = order.OrderID;
-            document.getElementById("displayOrderDate").textContent = order.OrderDate;
-            document.getElementById("displayStatus").textContent = order.Status;
-            document.getElementById("displayTotal").textContent = order.TotalAmount;
-
-            // Display items with discount button
-            const itemsHtml = order.items.map(item => {
-                const appliedDiscount = item.AppliedDiscounts && item.AppliedDiscounts.trim().length > 0
-                    ? item.AppliedDiscounts
-                    : '<span style="color: gray;">None</span>';
-                return `
-                <tr>
-                    <td>${item.OrderNo}</td>
-                    <td>${item.BookTitle}</td>
-                    <td>${item.FormatType}-${item.FormatID}</td>
-                    <td>${item.Quantity}</td>
-                    <td>$${item.PricePerItem}</td>
-                    <td>$${item.PriceAtPurchase}</td>
-                    <td>${appliedDiscount}</td>
-                    <td>
-                        <button class="discount-btn" onclick="openDiscountModal(${item.OrderNo})">
-                            Apply Discount
-                        </button>
-                        ${item.AppliedDiscounts && item.AppliedDiscounts.trim().length > 0 
-                            ? `<button class="delete-discount-btn" onclick="deleteDiscountPrompt(${item.OrderNo}, '${item.AppliedDiscounts}')">Delete Discount</button>` 
-                            : ''}
-                    </td>
-                </tr>
-            `;}
-        ).join('');
-
-            document.getElementById("itemsTable").innerHTML = itemsHtml;
+    function applyDiscount(discountId) {
+        fetch(`http://127.0.0.1:5000/api/orders/${currentOrderId}/apply-discount`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ discountID: discountId, orderNo: currentOrderNo, orderID: currentOrderId })
         })
-        .catch(err => {
-            showMessage("Error loading order: " + err.message, "error");
+        .then(res => res.json().then(body => ({ status: res.status, body })))
+        .then(r => {
+            discountModalObj.hide();
+            if (r.status === 200) {
+                Swal.fire({ icon: 'success', title: 'Applied!', text: r.body.message, timer: 1000, showConfirmButton: false });
+                showOrderDetail(currentOrderId);
+            } else {
+                Swal.fire({ icon: 'error', title: 'Oops...', text: r.body.message || r.body.error });
+            }
         });
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById("discountModal");
-    if (event.target == modal) {
-        modal.style.display = "none";
     }
-}
 
-// loadOrder();
+    function removeDiscount(orderNo, discountIds) {
+        const firstDiscountId = discountIds.split(',')[0].trim();
+        Swal.fire({
+            title: 'Remove Voucher?',
+            text: `Remove discount?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if(result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/orders/${currentOrderId}/delete-discount`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ discountID: firstDiscountId, orderNo: orderNo, orderID: currentOrderId })
+                })
+                .then(res => res.json())
+                .then(() => {
+                    Swal.fire('Removed!', 'Voucher removed.', 'success');
+                    showOrderDetail(currentOrderId);
+                });
+            }
+        });
+    }
 </script>
-
 </body>
 </html>
