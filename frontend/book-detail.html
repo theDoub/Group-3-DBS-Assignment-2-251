@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details - Book4U</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/book-detail.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">📚 Book4U</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#books">Books</a></li>
+                    <li><a href="orders.html">📦 Orders</a></li>
+                    <li><a href="cart.html">🛒 Cart</a></li>
+                    <li id="authSection">
+                        <button class="btn-login" onclick="window.location.href='login.html'">Login</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Book Detail Section -->
+    <section class="book-detail-section">
+        <div class="container">
+            <div id="loading">Loading book details...</div>
+            
+            <div id="bookDetail" style="display: none;">
+                <div class="book-detail-card">
+                    <div class="book-header">
+                        <h1 id="bookTitle"></h1>
+                        <div id="adminActions" class="admin-actions" style="display: none;">
+                            <button class="btn-edit" onclick="editBook()">✏️ Edit</button>
+                            <button class="btn-delete" onclick="deleteBook()">🗑️ Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="book-info">
+                        <div class="info-item">
+                            <label>Book ID:</label>
+                            <span id="bookId"></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Author:</label>
+                            <span id="bookAuthors"></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Categories:</label>
+                            <span id="bookCategories"></span>
+                        </div>
+                        <div class="info-item">
+                            <label>Price:</label>
+                            <span id="bookPrice" class="price"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="book-description">
+                        <h3>Description</h3>
+                        <p id="bookDescription"></p>
+                    </div>
+                    
+                    <div class="book-actions">
+                        <button class="btn-add-cart" onclick="addToCart()">Add to Cart</button>
+                        <button class="btn-back" onclick="window.location.href='index.html'">← Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Book Information</h2>
+            <form id="editForm" onsubmit="saveBook(event)">
+                <div class="form-group">
+                    <label for="editTitle">Book Title</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription" rows="5"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editCategories">Categories</label>
+                    <select id="editCategories" multiple size="4">
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple categories</small>
+                </div>
+                <div class="form-group">
+                    <label for="editAuthors">Authors</label>
+                    <select id="editAuthors" multiple size="4">
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple authors</small>
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">Price (VND)</label>
+                    <input type="number" id="editPrice" step="0.01" min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="scripts/book-detail.js"></script>
+</body>
+</html>
