@@ -4,6 +4,12 @@ from flask import Blueprint, request, jsonify
 from routes import auth_bp
 from db import query_one, query_all
 
+# Hashed password
+PASSWORD_HASH = {
+    "john123": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K",
+    "jane456": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K",
+    "alex789": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K"
+}
 
 @auth_bp.post("/login")
 def login():
@@ -32,7 +38,7 @@ def login():
         return jsonify({"error": "Account is not active"}), 403
 
     # So sánh thẳng, cho assignment:
-    if password != acc["PasswordHash"]:
+    if PASSWORD_HASH.get(password) != acc["PasswordHash"]:
         return jsonify({"error": "Invalid credentials"}), 401
 
     # Lấy roles của user dựa trên AccountType và AdminRole

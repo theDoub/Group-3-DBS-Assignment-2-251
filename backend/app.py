@@ -5,6 +5,7 @@ import os
 # Import blueprints
 from routes.auth_routes import auth_bp
 from routes.book_routes import book_bp
+from routes.cart_routes import cart_bp
 from routes.order_routes import order_bp
 from routes.category_routes import category_bp
 from routes.author_routes import author_bp
@@ -22,6 +23,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Register blueprints (they already have /api prefix in their definitions)
 app.register_blueprint(auth_bp)
 app.register_blueprint(book_bp)
+app.register_blueprint(cart_bp)
 app.register_blueprint(order_bp)
 app.register_blueprint(category_bp)
 app.register_blueprint(author_bp)

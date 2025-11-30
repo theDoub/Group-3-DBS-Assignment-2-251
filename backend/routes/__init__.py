@@ -4,6 +4,7 @@ from flask import Blueprint
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 book_bp = Blueprint("books", __name__, url_prefix="/api/books")
+cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
 order_bp = Blueprint("orders", __name__, url_prefix="/api/orders")
 category_bp = Blueprint("categories", __name__, url_prefix="/api/categories")
 author_bp = Blueprint("authors", __name__, url_prefix="/api/authors")
