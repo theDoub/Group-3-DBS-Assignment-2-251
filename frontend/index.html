@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book4U - Online Bookstore</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">📚 Book4U</div>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#books">Books</a></li>
+                    <li><a href="orders.html">📦 Orders</a></li>
+                    <li><a href="cart.html">🛒 Cart</a></li>
+                    <li id="authSection">
+                        <button class="btn-login" onclick="showLogin()">Login</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>Welcome to Book4U</h1>
+            <p>Discover thousands of diverse books at the best prices</p>
+            <button class="btn-primary" onclick="scrollToBooks()">Explore Now</button>
+        </div>
+    </section>
+
+    <!-- Books Section -->
+    <section class="books-section" id="books">
+        <div class="container">
+            <div class="books-header">
+                <h2 class="section-title">Book List</h2>
+                <button id="addBookBtn" class="btn-add-book" onclick="showAddBookModal()" style="display: none;">
+                    ➕ Add New Book
+                </button>
+            </div>
+            
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterBooks('')">All</button>
+                <button class="filter-btn" onclick="filterBooks('Literature')">Literature</button>
+                <button class="filter-btn" onclick="filterBooks('Fantasy')">Fantasy</button>
+                <button class="filter-btn" onclick="filterBooks('Science Fiction')">Science Fiction</button>
+                <button class="filter-btn" onclick="filterBooks('Business')">Business</button>
+                <button class="filter-btn" onclick="filterBooks('Self-Help')">Self-Help</button>
+                <button class="filter-btn" onclick="filterBooks('Personal Finance')">Personal Finance</button>
+            </div>
+
+            <div id="loading">Loading books...</div>
+            <div class="books-grid" id="booksGrid"></div>
+        </div>
+    </section>
+
+    <!-- Add Book Modal -->
+    <div id="addBookModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddBookModal()">&times;</span>
+            <h2>Add New Book</h2>
+            <form id="addBookForm" onsubmit="addBook(event)">
+                <div class="form-group">
+                    <label for="newTitle">Book Title *</label>
+                    <input type="text" id="newTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="newDescription">Description</label>
+                    <textarea id="newDescription" rows="5"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="newCategories">Categories *</label>
+                    <select id="newCategories" multiple size="4" required>
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple categories</small>
+                </div>
+                <div class="form-group">
+                    <label for="newAuthors">Authors *</label>
+                    <select id="newAuthors" multiple size="4" required>
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple authors</small>
+                </div>
+                <div class="form-group">
+                    <label for="newPrice">Price (VND) *</label>
+                    <input type="number" id="newPrice" step="0.01" min="0" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddBookModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Add Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Book4U. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="scripts/main.js"></script>
+</body>
+</html>

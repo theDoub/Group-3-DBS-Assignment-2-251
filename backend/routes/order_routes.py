@@ -27,6 +27,7 @@ def list_discounts():
 @order_bp.get("")
 def list_orders():
     """
+<<<<<<< HEAD
     Liệt kê các Order, join với CustomerAccount để hiện thông tin khách hàng.
     """
     account_id = request.args.get("accountId")
@@ -47,18 +48,97 @@ def list_orders():
     """
     orders = query_all(sql, [account_id])
     return jsonify(orders)
+=======
+    Liệt kê các Order với phân quyền:
+    - Customer: chỉ xem order của mình
+    - Super Admin / Order Manager: xem tất cả order
+    """
+    account_id = request.args.get('account_id')
+    roles = request.args.get('roles', '')  # Comma-separated roles
+    
+    if not account_id:
+        return jsonify({"error": "account_id is required"}), 400
+    
+    # Parse roles
+    role_list = [r.strip() for r in roles.split(',') if r.strip()]
+    
+    # Check if user is admin
+    is_admin = 'Super Admin' in role_list or 'Order Manager' in role_list
+    
+    if is_admin:
+        # Admin: xem tất cả orders
+        sql = """
+            SELECT 
+                O.OrderID,
+                O.AccountID,
+                O.OrderDate,
+                O.Status,
+                O.TotalAmount,
+                CA.Name AS CustomerName
+            FROM `Order` O
+            JOIN CustomerAccount CA ON O.AccountID = CA.AccountID
+            ORDER BY O.OrderDate DESC
+        """
+        rows = query_all(sql)
+    else:
+        # Customer: chỉ xem order của mình
+        sql = """
+            SELECT 
+                O.OrderID,
+                O.AccountID,
+                O.OrderDate,
+                O.Status,
+                O.TotalAmount,
+                CA.Name AS CustomerName
+            FROM `Order` O
+            JOIN CustomerAccount CA ON O.AccountID = CA.AccountID
+            WHERE O.AccountID = %s
+            ORDER BY O.OrderDate DESC
+        """
+        rows = query_all(sql, [account_id])
+    
+    return jsonify(rows)
+
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 
 # For details of a specific order
 @order_bp.get("/<order_id>")
 def get_order_detail(order_id):
+<<<<<<< HEAD
+=======
+    """
+    Chi tiết đơn hàng với phân quyền:
+    - Customer: chỉ xem order của mình
+    - Super Admin / Order Manager: xem tất cả order
+    """
+    account_id = request.args.get('account_id')
+    roles = request.args.get('roles', '')
+    
+    if not account_id:
+        return jsonify({"error": "account_id is required"}), 400
+    
+    # Parse roles
+    role_list = [r.strip() for r in roles.split(',') if r.strip()]
+    is_admin = 'Super Admin' in role_list or 'Order Manager' in role_list
+    
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
     order = query_one(
         """
         SELECT 
             O.OrderID,
+<<<<<<< HEAD
             O.OrderDate,
             O.Status,
             O.TotalAmount,
             CA.Name AS CustomerName
+=======
+            O.AccountID,
+            O.OrderDate,
+            O.Status,
+            O.TotalAmount,
+            CA.Name AS CustomerName,
+            CA.DeliveryAddress
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         FROM `Order` O
         JOIN CustomerAccount CA ON O.AccountID = CA.AccountID
         WHERE O.OrderID = %s
@@ -68,6 +148,13 @@ def get_order_detail(order_id):
 
     if not order:
         return jsonify({"error": "Order not found"}), 404
+<<<<<<< HEAD
+=======
+    
+    # SECURITY CHECK: Customer chỉ xem được order của mình
+    if not is_admin and order['AccountID'] != account_id:
+        return jsonify({"error": "Unauthorized: You can only view your own orders"}), 403
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 
     items = query_all(
         """
@@ -78,22 +165,114 @@ def get_order_detail(order_id):
             OI.Quantity,
             OI.PricePerItem,
             OI.PriceAtPurchase,
+<<<<<<< HEAD
             getTitleByFormatID(OI.FormatID) AS BookTitle,
             GROUP_CONCAT(AD.DiscountID SEPARATOR ', ') AS AppliedDiscounts
         FROM OrderItem OI
         LEFT JOIN DiscountApply AD ON OI.OrderID = AD.OrderID AND OI.OrderNo = AD.OrderNo
         LEFT JOIN Format F ON OI.FormatID = F.FormatID
+=======
+            B.Title AS BookTitle,
+            B.BookID
+        FROM OrderItem OI
+        JOIN Format F ON OI.FormatID = F.FormatID
+        JOIN Edition E ON F.EditionID = E.EditionID
+        JOIN Book B ON E.BookID = B.BookID
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         WHERE OI.OrderID = %s
         GROUP BY OI.OrderNo, OI.FormatID, OI.Quantity, OI.PricePerItem, OI.PriceAtPurchase
         ORDER BY OI.OrderNo
         """,
         [order_id],
     )
+<<<<<<< HEAD
 
     order["items"] = items
     return jsonify(order)
 
 
+=======
+    
+    # Get delivery info
+    delivery = query_one(
+        """
+        SELECT Status, Carrier, TrackingNumber, 
+               ActualShippingDate, ExpectedShippingDate
+        FROM Delivery
+        WHERE OrderID = %s
+        """,
+        [order_id]
+    )
+    
+    # Get applied discounts
+    discounts = query_all(
+        """
+        SELECT D.Name, D.Type, D.Value, DA.OrderNo
+        FROM DiscountApply DA
+        JOIN Discount D ON DA.DiscountID = D.DiscountID
+        WHERE DA.OrderID = %s
+        """,
+        [order_id]
+    )
+
+    order["items"] = items
+    order["delivery"] = delivery
+    order["discounts"] = discounts
+    return jsonify(order)
+
+
+@order_bp.put("/<order_id>/status")
+def update_order_status(order_id):
+    """
+    Cập nhật trạng thái đơn hàng - chỉ dành cho Super Admin và Order Manager
+    """
+    data = request.get_json() or {}
+    account_id = data.get('account_id')
+    roles = data.get('roles', '')
+    new_status = data.get('status')
+    
+    if not account_id or not new_status:
+        return jsonify({"error": "account_id and status are required"}), 400
+    
+    # Parse roles và kiểm tra quyền
+    role_list = [r.strip() for r in roles.split(',') if r.strip()]
+    is_admin = 'Super Admin' in role_list or 'Order Manager' in role_list
+    
+    if not is_admin:
+        return jsonify({"error": "Unauthorized: Only Super Admin or Order Manager can update order status"}), 403
+    
+    # Validate status
+    valid_statuses = ['pending', 'processing', 'confirmed', 'delivered', 'cancelled']
+    if new_status not in valid_statuses:
+        return jsonify({"error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"}), 400
+    
+    # Check order exists
+    order = query_one("SELECT OrderID, Status FROM `Order` WHERE OrderID = %s", [order_id])
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+    
+    # Update status
+    execute("UPDATE `Order` SET Status = %s WHERE OrderID = %s", [new_status, order_id])
+    
+    # Also update delivery status if applicable
+    if new_status == 'confirmed':
+        execute("UPDATE Delivery SET Status = 'preparing' WHERE OrderID = %s", [order_id])
+    elif new_status == 'processing':
+        execute("UPDATE Delivery SET Status = 'shipped' WHERE OrderID = %s", [order_id])
+    elif new_status == 'delivered':
+        execute("UPDATE Delivery SET Status = 'delivered' WHERE OrderID = %s", [order_id])
+    elif new_status == 'cancelled':
+        execute("UPDATE Delivery SET Status = 'cancelled' WHERE OrderID = %s", [order_id])
+    
+    return jsonify({
+        "message": "Order status updated successfully",
+        "orderId": order_id,
+        "oldStatus": order['Status'],
+        "newStatus": new_status
+    })
+
+
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 @order_bp.post("/<order_id>/recalculate-total")
 def recalculate_total(order_id):
     """

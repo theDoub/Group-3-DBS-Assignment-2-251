@@ -2,7 +2,11 @@
 
 from flask import Blueprint, request, jsonify
 from routes import auth_bp
+<<<<<<< HEAD
 from db import query_one
+=======
+from db import query_one, query_all
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 
 # Hashed password
 PASSWORD_HASH = {
@@ -26,7 +30,11 @@ def login():
         return jsonify({"error": "username and password are required"}), 400
 
     acc = query_one(
+<<<<<<< HEAD
         "SELECT AccountID, Username, PasswordHash, Status "
+=======
+        "SELECT AccountID, Username, PasswordHash, Status, AccountType "
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         "FROM Account WHERE Username = %s",
         [username],
     )
@@ -41,12 +49,56 @@ def login():
     if PASSWORD_HASH.get(password) != acc["PasswordHash"]:
         return jsonify({"error": "Invalid credentials"}), 401
 
+<<<<<<< HEAD
+=======
+    # Lấy roles của user dựa trên AccountType và AdminRole
+    roles = []
+    
+    # Kiểm tra AccountType
+    account_type = acc.get("AccountType") if "AccountType" in acc else None
+    
+    # Nếu là Customer account
+    customer = query_one(
+        "SELECT AccountID FROM CustomerAccount WHERE AccountID = %s",
+        [acc["AccountID"]]
+    )
+    
+    # Nếu là Administrator account, lấy roles từ AdminRole
+    admin_roles = query_all(
+        """
+        SELECT r.RoleName 
+        FROM AdminRole ar
+        JOIN Role r ON ar.RoleID = r.RoleID
+        WHERE ar.AccountID = %s
+        """,
+        [acc["AccountID"]]
+    )
+    
+    # Thêm admin roles nếu có
+    if admin_roles:
+        for role in admin_roles:
+            roles.append(role["RoleName"])
+    
+    # Nếu là customer account hoặc không có admin role, thêm Customer role
+    if customer or not roles:
+        if "Customer" not in roles:
+            roles.append("Customer")
+    
+    # Nếu vẫn không có role nào (trường hợp đặc biệt), set mặc định
+    if not roles:
+        roles.append("Customer")
+
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
     # Ở mức assignment, không cần JWT phức tạp. Trả về thông tin cơ bản.
     return jsonify(
         {
             "message": "Login successful",
             "accountID": acc["AccountID"],
             "username": acc["Username"],
+<<<<<<< HEAD
+=======
+            "roles": roles,
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         }
     )
 

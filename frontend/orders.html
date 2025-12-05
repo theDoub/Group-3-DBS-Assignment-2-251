@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Bookstore</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/orders.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">📚 Book4U</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#books">Books</a></li>
+                    <li><a href="orders.html">📦 Orders</a></li>
+                    <li><a href="cart.html" class="active">🛒 Cart</a></li>
+                    <li id="authSection">
+                        <button class="btn-login" onclick="window.location.href='login.html'">Login</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <h1>My Orders</h1>
+            <p class="subtitle" id="roleInfo">Loading...</p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading orders...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyOrders" class="empty-state" style="display: none;">
+            <div class="empty-icon">📦</div>
+            <h2>No Orders Yet</h2>
+            <p>You haven't placed any orders. Start exploring books!</p>
+            <button class="btn-primary" onclick="window.location.href='index.html'">Explore Books</button>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersContent" style="display: none;">
+            <div class="orders-filters">
+                <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="pending">Pending</button>
+                <button class="filter-btn" data-status="processing">Processing</button>
+                <button class="filter-btn" data-status="confirmed">Confirmed</button>
+                <button class="filter-btn" data-status="delivered">Delivered</button>
+                <button class="filter-btn" data-status="cancelled">Cancelled</button>
+            </div>
+
+            <div id="ordersList" class="orders-list">
+                <!-- Orders will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Details</h2>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div id="orderDetailContent" class="modal-body">
+                <!-- Order details will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/orders.js"></script>
+</body>
+</html>
