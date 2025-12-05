@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book4U - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --primary-soft: rgba(13,110,253,0.06);
+            --accent: #ff6d00;
+            --bg-soft: #f5f7fb;
+        }
+
+        body {
+            background: radial-gradient(circle at top left, #e3f2fd 0, #f8f9fa 45%, #f5f5f5 100%);
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-brand {
+            letter-spacing: .5px;
+        }
+
+        .search-wrapper {
+            max-width: 480px;
+        }
+
+        .search-input {
+            border-radius: 999px;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            background-color: rgba(255,255,255,0.95);
+            padding: 10px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(0,0,0,0.5);
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 6px 20px rgba(13,110,253,0.3);
+            border-color: #0d6efd;
+            background-color: #fff;
+        }
+
+        .input-group-text {
+            background-color: transparent;
+            border: none;
+        }
+
+        /* HERO */
+        .hero-banner {
+            background: linear-gradient(125deg, #0d6efd, #00c4ff);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-badge {
+            background: rgba(255,255,255,.12);
+            border-radius: 999px;
+            padding: 4px 12px;
+            font-size: .8rem;
+        }
+
+        .hero-banner::after {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(255,255,255,.5), transparent 70%);
+            top: -80px;
+            right: -40px;
+            opacity: .7;
+        }
+
+        .hero-cta-btn {
+            border-radius: 999px;
+            padding-inline: 18px;
+            box-shadow: 0 8px 16px rgba(0,0,0,.18);
+        }
+
+        .hero-stats {
+            font-size: .9rem;
+            opacity: .9;
+        }
+
+        /* CATEGORY SCROLLER */
+        .category-bar {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(15,23,42,.06);
+        }
+
+        .category-scroll {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 4px;
+        }
+
+        .category-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .category-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,.15);
+            border-radius: 4px;
+        }
+
+        .category-filter {
+            border-radius: 999px;
+            border-width: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding-inline: 14px;
+        }
+
+        .category-filter.active {
+            background: var(--primary);
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(13,110,253,.35);
+        }
+
+        /* BOOK CARDS */
+        .book-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            border-radius: 16px;
+            border: 1px solid rgba(148,163,184,.3);
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(15,23,42,.15);
+            border-color: rgba(13,110,253,.65);
+        }
+
+        .book-cover {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 0.95rem 0.95rem 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+        }
+
+        .category-pill {
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: .7rem;
+        }
+
+        .desc-truncate {
+            display: -webkit-box;
+            -line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: .86rem;
+        }
+
+        .format-badge {
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+            border-radius: 12px;
+            border-width: 1px;
+        }
+
+        .format-badge:hover {
+            background-color: var(--primary-soft);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(15,23,42,.16);
+        }
+
+        .price-tag {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .card-footer-like {
+            border-top: 1px dashed rgba(148,163,184,.5);
+            margin-top: .35rem;
+            padding-top: .35rem;
+        }
+
+        /* LOADING STATE */
+        #loading {
+            min-height: 120px;
+        }
+
+        /* SMALL UTILITIES */
+        .chip {
+            border-radius: 999px;
+            padding: 4px 10px;
+            background: rgba(15,23,42,.06);
+            font-size: .78rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-banner {
+                padding: 1.25rem 1.3rem;
+            }
+            .hero-banner h2 {
+                font-size: 1.4rem;
+            }
+            .search-wrapper {
+                max-width: 100%;
+                margin-top: .5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-3 sticky-top">
+    <div class="container py-1">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+            <i class="bi bi-book-half me-2 fs-4"></i>
+            <span>Book4U</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <div class="ms-lg-4 my-3 my-lg-0 flex-grow-1 d-flex justify-content-lg-center">
+                <div class="search-wrapper w-100">
+                    <div class="input-group" style="border-radius: 999px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+                        <span class="input-group-text" style="background: #7688a3; border: none; padding-left: 16px;">
+                            <i class="bi bi-search" style="color: white; font-size: 1.1rem;"></i>
+                        </span>
+                        <input type="text" class="form-control search-input" id="searchInput" placeholder="Search books, authors..." aria-label="Search" style="border: none; background: rgba(255,255,255,0.95); padding: 10px 16px; font-size: 0.95rem;">
+                        <button type="button" class="btn btn-link text-muted p-0 pe-3" id="clearSearch" style="display: none;">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 ms-lg-4">
+                <span class="navbar-text text-light small d-none d-md-inline" id="welcomeUser"></span>
+                <a href="order.html" class="btn btn-link text-light text-decoration-none px-2">
+                    <i class="bi bi-receipt me-1"></i> Orders
+                </a>
+                <a href="cart.html" class="btn btn-light btn-sm text-primary fw-semibold px-3">
+                    <i class="bi bi-cart-fill me-1"></i> Cart
+                </a>
+                <button onclick="logout()" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mb-4">
+
+    <!-- HERO SECTION -->
+    <section class="hero-banner rounded-4 p-4 mb-4 shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+        <div class="position-relative" style="z-index:1;">
+            <div class="hero-badge mb-2 d-inline-flex align-items-center gap-1">
+                <i class="bi bi-lightning-charge-fill text-warning"></i>
+                Today’s Picks for You
+            </div>
+            <h2 class="fw-bold mb-2">Discover your favorite books.</h2>
+            <p class="mb-3 hero-stats">
+                Curated formats: <b>Printed</b>, <b>Digital</b>, <b>Audio</b> – powered by your Book4U database.
+            </p>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button class="btn btn-light btn-sm hero-cta-btn">
+                    <i class="bi bi-stars me-1 text-warning"></i> Explore Featured Books
+                </button>
+                <span class="chip text-light">
+                    <i class="bi bi-shield-check me-1"></i>
+                </span>
+            </div>
+        </div>
+        <div class="d-none d-md-flex flex-column align-items-end text-end" style="z-index:1;">
+            <div class="bg-white bg-opacity-10 rounded-4 px-3 py-2 mb-2">
+                <div class="small text-uppercase opacity-75"></div>
+                <div class="fw-bold"></div>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-4 px-3 py-2 small">
+                <i class="bi bi-truck me-1"></i> Fast delivery for printed books<br>
+                <i class="bi bi-cloud-arrow-down me-1"></i> Instant access for digital formats
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORY FILTER -->
+    <section class="mb-3">
+        <div class="category-bar p-3 p-md-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0 text-secondary fw-semibold">
+                    <i class="bi bi-grid-3x3-gap me-1 text-primary"></i> Browse by category
+                </h5>
+                <span class="small text-muted d-none d-sm-inline">
+                </span>
+            </div>
+            <div class="category-scroll pt-1">
+                <button class="btn btn-outline-primary btn-sm active category-filter" data-category="all">
+                    <i class="bi bi-globe2"></i> All Categories
+                </button>
+                <button class="btn btn-outline-primary btn-sm category-filter" data-category="Literature">
+                    <i class="bi bi-book"></i> Literature
+                </button>
+                <button class="btn btn-outline-primary btn-sm category-filter" data-category="Fantasy">
+                    <i class="bi bi-moon-stars"></i> Fantasy
+                </button>
+                <button class="btn btn-outline-primary btn-sm category-filter" data-category="Science Fiction">
+                    <i class="bi bi-rocket-takeoff"></i> Science Fiction
+                </button>
+                <button class="btn btn-outline-primary btn-sm category-filter" data-category="Business">
+                    <i class="bi bi-briefcase"></i> Business
+                </button>
+                <button class="btn btn-outline-primary btn-sm category-filter" data-category="Self-Help">
+                    <i class="bi bi-emoji-smile"></i> Self-Help
+                </button>
+                <button class="btn btn-outline-primary btn-sm category-filter" data-category="Personal Finance">
+                    <i class="bi bi-cash-coin"></i> Personal Finance
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- LOADING -->
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary mb-2" role="status"></div>
+        <div class="text-muted small">Loading books from Book4U API...</div>
+    </div>
+
+    <!-- BOOK GRID -->
+    <section>
+        <h5 class="text-secondary mb-3">
+            <i class="bi bi-stars text-warning me-1"></i> Featured Books
+        </h5>
+        <div id="books" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 g-md-4"></div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) window.location.href = "login.html";
+    document.getElementById("welcomeUser").innerText = `Hi, ${user.username}`;
+
+    // Book image mapping
+    const bookImageMap = {
+        'A Game of Thrones': 'images/game-of-thrones.jpg',
+        'Harry Potter and the Philosopher\'s Stone': 'images/harry-potter.jpg',
+        'Rich Dad Poor Dad': 'images/rich-dad-poor-dad.jpg',
+        'Sapiens': 'images/sapiens.jpg'
+    };
+
+    // Book category mapping
+    // Book category mapping (from database)
+    const bookCategoryMap = {
+        'A Game of Thrones': 'Fantasy',
+        'Harry Potter and the Philosopher\'s Stone': 'Fantasy',
+        'Rich Dad Poor Dad': 'Personal Finance',
+        'Sapiens: A Brief History of Humankind': 'Self-Help'
+    };
+
+    let allBooks = [];
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    function searchBooks(query) {
+        currentSearch = query.toLowerCase().trim();
+        filterBooks();
+    }
+
+    function matchesSearch(book) {
+        if (!currentSearch) return true;
+
+        const searchLower = currentSearch;
+        
+        // Search in title
+        if (book.Title.toLowerCase().includes(searchLower)) return true;
+        
+        // Search in description
+        if (book.Description && book.Description.toLowerCase().includes(searchLower)) return true;
+        
+        // Search in authors
+        if (book.Authors && book.Authors.toLowerCase().includes(searchLower)) return true;
+        
+        // Search in categories
+        if (book.Categories && book.Categories.toLowerCase().includes(searchLower)) return true;
+        
+        return false;
+    }
+
+    function formatAudioDuration(seconds) {
+        if (!seconds) return 'N/A';
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours}h ${minutes}m`;
+    }
+
+    function showBookDetails(bookId, title, authors) {
+        // Find the book in allBooks
+        const book = allBooks.find(b => b.BookID === bookId);
+        if (!book) return;
+
+        let formatsDetail = '';
+        if (book.Formats) {
+            const formats = typeof book.Formats === 'string' ? JSON.parse(book.Formats) : book.Formats;
+            const printedFormatIndex = formats.findIndex(f => f.FormatType === 'Printed');
+            
+            formatsDetail = formats.map((f, index) => {
+                let typeInfo = `<strong>${f.FormatType}</strong> - $${f.Price}`;
+                let isReprint = false;
+                
+                // Check if this is a reprint (Game of Thrones with price 16.5)
+                if (f.FormatType === 'Printed' && f.Price === 16.5 && f.PublisherName) {
+                    typeInfo += ` <span class="badge bg-warning text-dark ms-2">Reprinted</span>`;
+                    isReprint = true;
+                }
+                
+                // Add format-specific details
+                if (f.FormatType === 'Audio' && f.AudioDuration) {
+                    typeInfo += ` | Duration: ${formatAudioDuration(f.AudioDuration)}`;
+                } else if (f.FormatType === 'Printed') {
+                    if (f.PageCount) typeInfo += ` | Pages: ${f.PageCount}`;
+                    if (f.Weight) typeInfo += ` | Weight: ${f.Weight}g`;
+                } else if (f.FormatType === 'E' && f.EBookFormat) {
+                    typeInfo += ` | Format: ${f.EBookFormat}`;
+                }
+                
+                // Add publication date for printed books
+                if (f.FormatType === 'Printed' && f.PublicationDate) {
+                    const pubDate = new Date(f.PublicationDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    typeInfo += ` | Published: ${pubDate}`;
+                }
+                
+                return `<li class="mb-3">${typeInfo}</li>`;
+            }).join('');
+        }
+
+        Swal.fire({
+            title: title,
+            html: `
+                <div class="text-start">
+                    <p class="mb-2">
+                        <strong><i class="bi bi-person"></i> Authors:</strong> ${authors || 'Unknown'}
+                    </p>
+                    <p class="mb-2">
+                        <strong><i class="bi bi-tag"></i> Category:</strong> ${book.Categories || 'General'}
+                    </p>
+                    <p class="mb-2">
+                        <strong><i class="bi bi-building"></i> Publishers:</strong> ${book.Publishers || 'Unknown'}
+                    </p>
+                    ${book.Contact ? `<p class="mb-3"><strong><i class="bi bi-telephone"></i> Contact:</strong><br><small>${book.Contact}</small></p>` : ''}
+                    <p class="mb-3">
+                        <strong><i class="bi bi-file-text"></i> Description:</strong><br>
+                        ${book.Description || 'No description available.'}
+                    </p>
+                    <p class="mb-2"><strong><i class="bi bi-box"></i> Available Formats:</strong></p>
+                    <ul class="text-start" style="list-style-position: inside;">
+                        ${formatsDetail}
+                    </ul>
+                </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Close',
+            width: '700px'
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+    }
+
+    function getBookImage(title) {
+        for (let bookTitle in bookImageMap) {
+            if (title.toLowerCase().includes(bookTitle.toLowerCase()) ||
+                bookTitle.toLowerCase().includes(title.toLowerCase())) {
+                return bookImageMap[bookTitle];
+            }
+        }
+        const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+        return `https://via.placeholder.com/300x400/${randomColor}/ffffff?text=${encodeURIComponent(title)}`;
+    }
+
+    function getBookCategory(book) {
+        // If book has Categories from API, use it (prioritize actual data)
+        if (book.Categories && book.Categories.trim()) {
+            // Get the first category if multiple
+            const categories = book.Categories.split(',');
+            return categories[0].trim();
+        }
+        
+        // Fallback to mapping if API data not available
+        for (let bookTitle in bookCategoryMap) {
+            if (book.Title.toLowerCase().includes(bookTitle.toLowerCase()) ||
+                bookTitle.toLowerCase().includes(book.Title.toLowerCase())) {
+                return bookCategoryMap[bookTitle];
+            }
+        }
+        return 'General';
+    }
+
+    function filterBooks() {
+        const container = document.getElementById("books");
+        container.innerHTML = "";
+
+        // Apply both category filter and search filter
+        let filtered = currentFilter === 'all'
+            ? allBooks
+            : allBooks.filter(b => getBookCategory(b) === currentFilter);
+
+        // Apply search filter
+        filtered = filtered.filter(b => matchesSearch(b));
+
+        if (filtered.length === 0) {
+            if (currentSearch) {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-5">No books found matching your search.</div>';
+            } else {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-5">No books found in this category.</div>';
+            }
+            return;
+        }
+
+        filtered.forEach(b => {
+            let formatsHtml = '<div class="mt-2"><small class="text-muted d-block mb-1">Select format:</small>';
+
+            let minPrice = null;
+
+            if (b.Formats) {
+                const formats = typeof b.Formats === 'string' ? JSON.parse(b.Formats) : b.Formats;
+
+                if (Array.isArray(formats)) {
+                    formats.sort((x, y) => x.Price - y.Price);
+                    const safeTitle = b.Title.replace(/'/g, "\\'");
+
+                    formats.forEach(f => {
+                        if (minPrice === null || f.Price < minPrice) {
+                            minPrice = f.Price;
+                        }
+                    });
+
+                    formatsHtml += formats.map(f => `
+                        <button onclick="buy('${f.FormatID}', '${safeTitle}', '${f.FormatType}')"
+                            class="btn btn-outline-primary btn-sm mb-2 w-100 d-block format-badge">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small"><i class="bi bi-cart-plus me-1"></i>${f.FormatType}</span>
+                                <span class="price-tag small">$${f.Price}</span>
+                            </div>
+                        </button>
+                    `).join('');
+                }
+            }
+            formatsHtml += '</div>';
+
+            const imgUrl = getBookImage(b.Title);
+            const category = getBookCategory(b);
+            const displayPrice = minPrice !== null ? `$${minPrice}` : '—';
+
+            container.innerHTML += `
+                <div class="col">
+                    <div class="card h-100 book-card">
+                        <img src="${imgUrl}" class="card-img-top book-cover" alt="${b.Title}" style="cursor: pointer;"
+                             onclick="showBookDetails('${b.BookID}', '${b.Title.replace(/'/g, "\\'")}', '${b.Authors || 'Unknown Author'}')"
+                             onerror="this.src='https://via.placeholder.com/600x800/cccccc/ffffff?text=${encodeURIComponent(b.Title)}'">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h5 class="card-title text-primary fw-semibold text-truncate me-1" title="${b.Title}" style="cursor: pointer;"
+                                    onclick="showBookDetails('${b.BookID}', '${b.Title.replace(/'/g, "\\'")}', '${b.Authors || 'Unknown Author'}')">
+                                    ${b.Title}
+                                </h5>
+                                <span class="badge bg-light text-muted border category-pill">
+                                    ${category}
+                                </span>
+                            </div>
+
+                            <p class="card-text text-muted desc-truncate mb-2" style="cursor: pointer;"
+                               onclick="showBookDetails('${b.BookID}', '${b.Title.replace(/'/g, "\\'")}', '${b.Authors || 'Unknown Author'}')">
+                                ${b.Description || 'No description available.'}
+                            </p>
+
+                            <div class="card-footer-like mt-auto pt-1">
+                             ${formatsHtml}
+                           </div>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function loadBooks() {
+        fetch("http://127.0.0.1:5000/api/books")
+            .then(res => res.json())
+            .then(data => {
+                allBooks = data;
+                document.getElementById("loading").style.display = "none";
+                filterBooks();
+            })
+            .catch(() => {
+                document.getElementById("loading").innerHTML =
+                    '<div class="text-danger small">Failed to load books. Please ensure the backend is running.</div>';
+            });
+    }
+
+    function buy(formatId, title, type) {
+        Swal.fire({
+            title: `Add to Cart`,
+            html: `Book: <b>${title}</b><br>Format: <span class="badge bg-info text-dark">${type}</span>`,
+            input: 'number',
+            inputValue: 1,
+            inputLabel: 'Quantity',
+            inputAttributes: { min: 1, max: 100, step: 1 },
+            showCancelButton: true,
+            confirmButtonText: '<i class="bi bi-cart-check"></i> Add Now',
+            confirmButtonColor: '#0d6efd',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const qty = parseInt(result.value);
+                if (qty > 0) {
+                    fetch('http://127.0.0.1:5000/api/cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ accountId: user.accountID, formatId: formatId, quantity: qty })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                Swal.fire('Error', data.error, 'error');
+                            } else {
+                                const Toast = Swal.mixin({
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true
+                                });
+                                Toast.fire({ icon: 'success', title: 'Added to cart successfully' });
+                            }
+                        })
+                        .catch(() => Swal.fire('Error', 'Failed to connect server', 'error'));
+                }
+            }
+        });
+    }
+
+    // Category filter event listeners
+    document.querySelectorAll('.category-filter').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.category-filter').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.getAttribute('data-category');
+            filterBooks();
+        });
+    });
+
+    // Search input event listener
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            searchBooks(this.value);
+            // Show/hide clear button
+            if (this.value.trim()) {
+                clearSearch.style.display = 'block';
+            } else {
+                clearSearch.style.display = 'none';
+            }
+        });
+    }
+    
+    if (clearSearch) {
+        clearSearch.addEventListener('click', function () {
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            searchBooks('');
+            searchInput.focus();
+        });
+    }
+
+    loadBooks();
+</script>
+</body>
+</html>

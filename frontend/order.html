@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Orders - Book4U</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        body { background: #f1f5f9; }
+        .status-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .status-confirmed { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .status-cancelled { background: #f8d7da; color: #842029; border: 1px solid #f5c6cb; }
+        
+        .discount-card { cursor: pointer; border: 1px dashed #007bff; transition: all 0.2s; background: #fff; }
+        .discount-card:hover { background: #e7f3ff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .order-card { transition: transform 0.2s; border: none; border-radius: 10px; }
+        .order-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-white shadow-sm mb-4 sticky-top">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <a class="btn btn-outline-primary me-3 border-0" href="home.html"><i class="bi bi-arrow-left"></i> Back</a>
+            <span class="navbar-brand mb-0 h1 fw-bold text-primary"><i class="bi bi-receipt-cutoff"></i> Order Management</span>
+        </div>
+        <div class="d-flex">
+            <a href="cart.html" class="btn btn-light text-primary position-relative">
+                <i class="bi bi-cart3"></i> Cart
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container" style="max-width: 1000px;">
+    
+    <div id="ordersListSection">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-secondary"><i class="bi bi-list-check"></i> My Orders History</h3>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadOrdersList()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+        <div id="ordersContainer" class="row g-4"></div>
+    </div>
+
+    <div id="orderDetailsSection" style="display: none;">
+        <button class="btn btn-secondary mb-3 shadow-sm" onclick="backToOrders()"><i class="bi bi-arrow-left"></i> Back to List</button>
+        
+        <div class="card border-0 shadow-lg mb-4 overflow-hidden rounded-3">
+            <div class="card-header bg-primary text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="opacity-75 small">ORDER ID</span>
+                        <h5 class="mb-0 fw-bold">#<span id="d_orderId"></span></h5>
+                    </div>
+                    <span id="d_status" class="badge bg-light text-primary fs-6 px-3 py-2 rounded-pill">Status</span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Order Date</small>
+                        <strong id="d_date" class="fs-5"></strong>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted d-block">Total Amount</small>
+                        <span class="fs-2 text-primary fw-bold">$<span id="d_total"></span></span>
+                    </div>
+                </div>
+
+                <!-- Delivery Address Section -->
+                <div id="deliveryAddressSection" style="display: none;" class="card bg-light border-0 mb-4 p-3 rounded-2">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 text-dark fw-semibold">Delivery Address</h6>
+                            <p id="deliveryAddress" class="mb-0 text-muted"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mb-3 border-bottom pb-2">Order Items</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Format</th>
+                                <th class="text-center">Qty</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                                <th>Discount</th>
+                                <th class="text-end">Voucher</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTable"></tbody>
+                    </table>
+                </div>
+
+                <div id="orderActions" class="mt-4 pt-3 border-top text-end d-flex justify-content-end gap-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="discountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-ticket-perforated"></i> Apply Voucher</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <p class="text-muted small mb-3">Select a voucher to apply for this item:</p>
+                <div id="discountList" class="d-flex flex-column gap-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) window.location.href = "login.html";
+
+    // Global variables
+    let currentOrderId = null;
+    let currentOrderNo = null;
+    let currentItemPrice = 0; // Giá item để tính discount
+    let currentItemQty = 1;
+    let currentOrderTotal = 0; // Tổng bill để check điều kiện
+    
+    let discountModalObj = new bootstrap.Modal(document.getElementById('discountModal'));
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramOrderId = urlParams.get('orderId');
+
+    if (paramOrderId) {
+        showOrderDetail(paramOrderId);
+    } else {
+        loadOrdersList();
+    }
+
+    function backToOrders() {
+        document.getElementById("ordersListSection").style.display = 'block';
+        document.getElementById("orderDetailsSection").style.display = 'none';
+        window.history.pushState({}, "", "order.html");
+        loadOrdersList();
+    }
+
+    function loadOrdersList() {
+        fetch(`http://127.0.0.1:5000/api/orders?accountId=${user.accountID}`)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '';
+            
+            if(data.length === 0) {
+                container.innerHTML = `<div class="col-12 text-center py-5 text-muted">You haven't placed any orders yet.</div>`;
+                return;
+            }
+            
+            data.forEach(o => {
+                let badgeClass = 'status-pending';
+                if(o.Status === 'confirmed') badgeClass = 'status-confirmed';
+                else if(o.Status === 'cancelled') badgeClass = 'status-cancelled';
+
+                container.innerHTML += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 order-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="card-title text-primary fw-bold">#${o.OrderID}</h5>
+                                    <span class="badge ${badgeClass} text-dark">${o.Status.toUpperCase()}</span>
+                                </div>
+                                <p class="card-text text-muted mb-1"><i class="bi bi-calendar3 me-2"></i> ${o.OrderDate}</p>
+                                <h3 class="fw-bold my-3">$${o.TotalAmount}</h3>
+                                <button onclick="showOrderDetail('${o.OrderID}')" class="btn btn-outline-primary w-100 mt-auto">
+                                    View Details <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    function showOrderDetail(orderId) {
+        currentOrderId = orderId;
+        document.getElementById("ordersListSection").style.display = 'none';
+        document.getElementById("orderDetailsSection").style.display = 'block';
+        
+        document.getElementById("itemsTable").innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+
+        fetch(`http://127.0.0.1:5000/api/orders/${orderId}`)
+        .then(res => res.json())
+        .then(order => {
+            document.getElementById("d_orderId").innerText = order.OrderID;
+            document.getElementById("d_status").innerText = order.Status.toUpperCase();
+            document.getElementById("d_date").innerText = order.OrderDate;
+            document.getElementById("d_total").innerText = order.TotalAmount;
+            
+            // Check if order has printed books and delivery address
+            const hasPrintedBooks = order.items && order.items.some(item => item.FormatType === 'Printed');
+            const deliveryAddressSection = document.getElementById('deliveryAddressSection');
+            
+            if (hasPrintedBooks && order.DeliveryAddress) {
+                document.getElementById('deliveryAddress').innerText = order.DeliveryAddress;
+                deliveryAddressSection.style.display = 'block';
+            } else {
+                deliveryAddressSection.style.display = 'none';
+            }
+            
+            currentOrderTotal = parseFloat(order.TotalAmount); // Lưu tổng tiền
+
+            const tbody = document.getElementById("itemsTable");
+            tbody.innerHTML = order.items.map(item => {
+                const hasDiscount = item.AppliedDiscounts && item.AppliedDiscounts.trim().length > 0;
+                let actionBtn = '';
+                
+                if (order.Status === 'pending') {
+                    if (hasDiscount) {
+                        actionBtn = `<button onclick="removeDiscount(${item.OrderNo}, '${item.AppliedDiscounts}')" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Remove</button>`;
+                    } else {
+                        // Truyền thêm Giá và Qty vào để tính toán
+                        actionBtn = `<button onclick="openDiscountModal(${item.OrderNo}, ${item.PricePerItem}, ${item.Quantity})" class="btn btn-sm btn-success"><i class="bi bi-ticket-perforated"></i> Apply</button>`;
+                    }
+                } else {
+                    actionBtn = `<span class="text-muted small"><i class="bi bi-lock"></i> Locked</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td class="fw-bold text-primary">${item.BookTitle}</td>
+                        <td><span class="badge bg-light text-dark border">${item.FormatType}</span></td>
+                        <td class="text-center">${item.Quantity}</td>
+                        <td class="text-muted text-decoration-line-through">$${item.PricePerItem}</td>
+                        <td class="fw-bold text-success">$${item.PriceAtPurchase}</td>
+                        <td>${hasDiscount ? `<span class="badge bg-warning text-dark"><i class="bi bi-tag-fill"></i> ${item.AppliedDiscounts}</span>` : '<small class="text-muted">-</small>'}</td>
+                        <td class="text-end">${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const actionDiv = document.getElementById("orderActions");
+            if(order.Status === 'pending') {
+                actionDiv.innerHTML = `
+                    <button onclick="updateStatus('${order.OrderID}', 'cancelled')" class="btn btn-outline-danger btn-lg px-4">Cancel Order</button>
+                    <button onclick="updateStatus('${order.OrderID}', 'confirmed')" class="btn btn-success btn-lg px-4 shadow">Pay Now</button>
+                `;
+            } else {
+                actionDiv.innerHTML = `<div class="py-2 fw-bold text-secondary">Status: ${order.Status}</div>`;
+            }
+        });
+    }
+
+    function updateStatus(orderId, newStatus) {
+        let confirmTitle = newStatus === 'confirmed' ? 'Confirm Payment?' : 'Cancel Order?';
+        let btnColor = newStatus === 'confirmed' ? '#198754' : '#dc3545';
+
+        Swal.fire({
+            title: confirmTitle,
+            text: `Proceed to ${newStatus} order?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: btnColor,
+            confirmButtonText: 'Yes, Proceed'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(res => res.json())
+                .then(r => {
+                    Swal.fire('Success', r.message, 'success').then(() => showOrderDetail(orderId));
+                });
+            }
+        });
+    }
+
+    // --- LOGIC VOUCHER THÔNG MINH ---
+    function openDiscountModal(orderNo, pricePerItem, quantity) {
+        currentOrderNo = orderNo;
+        currentItemPrice = pricePerItem;
+        currentItemQty = quantity;
+
+        const listDiv = document.getElementById("discountList");
+        listDiv.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+        
+        discountModalObj.show();
+
+        fetch("http://127.0.0.1:5000/api/orders/discounts")
+        .then(res => res.json())
+        .then(discounts => {
+            listDiv.innerHTML = '';
+            
+            if(!discounts || discounts.length === 0) {
+                listDiv.innerHTML = '<p class="text-center text-muted">No vouchers available.</p>';
+                return;
+            }
+
+            // 1. Kiểm tra điều kiện (Mock Logic based on Text)
+            const processed = discounts.map(d => {
+                let isValid = true;
+                let reason = "";
+
+                // Giả lập logic kiểm tra text điều kiện
+                const cond = d.Conditions ? d.Conditions.toLowerCase() : "";
+
+                // Check: Over $50
+                if (cond.includes("over $50") && currentOrderTotal < 50) {
+                    isValid = false;
+                    reason = `Order total must be over $50 (Current: $${currentOrderTotal})`;
+                }
+                // Check: Buy 2
+                if (cond.includes("buy 2") && currentItemQty < 2) {
+                    isValid = false;
+                    reason = `Must buy at least 2 items (Current: ${currentItemQty})`;
+                }
+
+                // Tính tiền giảm (Estimated)
+                let saving = 0;
+                if (isValid) {
+                    if (d.Type === 'percentage') {
+                        saving = (currentItemPrice * d.Value) / 100;
+                    } else {
+                        saving = d.Value;
+                    }
+                    if (saving > currentItemPrice) saving = currentItemPrice;
+                }
+
+                return { ...d, isValid, reason, saving: parseFloat(saving) };
+            });
+
+            // 2. Sắp xếp: Hợp lệ -> Giảm nhiều tiền nhất -> Tên
+            processed.sort((a, b) => {
+                if (a.isValid !== b.isValid) return b.isValid - a.isValid; 
+                return b.saving - a.saving;
+            });
+
+            // 3. Render ra UI
+            processed.forEach((d, index) => {
+                let cardClass = d.isValid ? "border-primary" : "bg-light opacity-75";
+                let clickAction = d.isValid ? `onclick="applyDiscount(${d.DiscountID})"` : "";
+                let badge = "";
+                
+                // Best deal badge
+                if (index === 0 && d.isValid) {
+                    cardClass = "border-warning bg-warning-subtle";
+                    badge = `<span class="badge bg-warning text-dark mb-2"><i class="bi bi-star-fill"></i> Recommended</span>`;
+                }
+
+                let statusHtml = "";
+                if (!d.isValid) {
+                    statusHtml = `<div class="text-danger small fw-bold"><i class="bi bi-exclamation-circle"></i> ${d.reason}</div>`;
+                } else {
+                    statusHtml = `<div class="text-success small fw-bold">Save ~$${d.saving.toFixed(2)}</div>`;
+                }
+
+                listDiv.innerHTML += `
+                    <div class="card discount-card p-3 mb-2 ${cardClass}" ${clickAction} style="${d.isValid ? 'cursor:pointer' : 'cursor:not-allowed'}">
+                        ${badge}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold ${d.isValid ? 'text-danger' : 'text-muted'}">${d.Name}</h6>
+                                <small class="text-muted d-block fst-italic">${d.Conditions || 'No conditions'}</small>
+                                ${statusHtml}
+                            </div>
+                            <div class="text-end">
+                                <span class="d-block fw-bold ${d.isValid ? 'text-primary' : 'text-muted'} fs-5">
+                                    ${d.Type === 'percentage' ? d.Value + '%' : '$' + d.Value} OFF
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    function applyDiscount(discountId) {
+        fetch(`http://127.0.0.1:5000/api/orders/${currentOrderId}/apply-discount`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ discountID: discountId, orderNo: currentOrderNo, orderID: currentOrderId })
+        })
+        .then(res => res.json().then(body => ({ status: res.status, body })))
+        .then(r => {
+            discountModalObj.hide();
+            if (r.status === 200) {
+                Swal.fire({ icon: 'success', title: 'Applied!', text: r.body.message, timer: 1000, showConfirmButton: false });
+                showOrderDetail(currentOrderId);
+            } else {
+                Swal.fire({ icon: 'error', title: 'Oops...', text: r.body.message || r.body.error });
+            }
+        });
+    }
+
+    function removeDiscount(orderNo, discountIds) {
+        const firstDiscountId = discountIds.split(',')[0].trim();
+        Swal.fire({
+            title: 'Remove Voucher?',
+            text: `Remove discount?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if(result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/orders/${currentOrderId}/delete-discount`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ discountID: firstDiscountId, orderNo: orderNo, orderID: currentOrderId })
+                })
+                .then(res => res.json())
+                .then(() => {
+                    Swal.fire('Removed!', 'Voucher removed.', 'success');
+                    showOrderDetail(currentOrderId);
+                });
+            }
+        });
+    }
+</script>
+</body>
+</html>

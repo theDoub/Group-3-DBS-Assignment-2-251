@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Cart - Book4U</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>body { background: #f8f9fa; }</style>
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-white shadow-sm mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <a class="btn btn-outline-secondary me-3 border-0" href="home.html"><i class="bi bi-arrow-left"></i> Back to Store</a>
+            <span class="navbar-brand mb-0 h1 fw-bold text-primary"><i class="bi bi-cart3"></i> Shopping Cart</span>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-3" style="max-width: 900px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Item</th>
+                        <th>Format</th>
+                        <th class="text-center" style="width: 150px;">Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTable">
+                    <tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Total: <span class="text-primary fw-bold">$<span id="cartTotal">0.00</span></span></h4>
+                <button onclick="checkout()" class="btn btn-success btn-lg px-5 shadow-sm">
+                    Proceed to Checkout <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) window.location.href = "login.html";
+
+    function loadCart() {
+        fetch(`http://127.0.0.1:5000/api/cart?accountId=${user.accountID}`)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById("itemsTable");
+                let total = 0;
+                
+                if(data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Your cart is empty 🛒<br><a href="home.html" class="btn btn-sm btn-primary mt-2">Go Shopping</a></td></tr>`;
+                    document.getElementById("cartTotal").innerText = "0.00";
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => {
+                    const itemTotal = item.PricePerItem * item.Quantity;
+                    total += itemTotal;
+                    
+                    // Nút Disable dấu trừ nếu số lượng là 1
+                    const minusDisabled = item.Quantity <= 1 ? 'disabled' : '';
+
+                    return `
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">${item.BookTitle}</td>
+                        <td><span class="badge bg-light text-dark border">${item.FormatType}</span></td>
+                        
+                        <td class="text-center">
+                            <div class="input-group input-group-sm justify-content-center">
+                                <button class="btn btn-outline-secondary" ${minusDisabled} onclick="updateQuantity(${item.CartID}, ${item.ItemNo}, ${item.Quantity - 1})">-</button>
+                                <span class="input-group-text bg-white px-3 fw-bold">${item.Quantity}</span>
+                                <button class="btn btn-outline-secondary" onclick="updateQuantity(${item.CartID}, ${item.ItemNo}, ${item.Quantity + 1})">+</button>
+                            </div>
+                        </td>
+
+                        <td>$${item.PricePerItem}</td>
+                        <td class="fw-bold">$${itemTotal.toFixed(2)}</td>
+                        <td class="text-end pe-4">
+                            <button onclick="removeItem(${item.CartID}, ${item.ItemNo})" class="btn btn-sm btn-outline-danger" title="Remove Item">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+                document.getElementById("cartTotal").innerText = total.toFixed(2);
+            });
+    }
+
+    function updateQuantity(cartId, itemNo, newQuantity) {
+        if (newQuantity < 1) return; // Chặn ở Client
+
+        // Gọi API Update
+        fetch(`http://127.0.0.1:5000/api/cart/${itemNo}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cartId: cartId, quantity: newQuantity })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) {
+                Swal.fire('Error', data.error, 'error');
+            } else {
+                loadCart(); // Load lại để cập nhật giá tiền
+            }
+        })
+        .catch(err => Swal.fire('Error', 'Connection failed', 'error'));
+    }
+
+    function removeItem(cartId, itemNo) {
+        Swal.fire({
+            title: 'Remove item?',
+            text: "Do you want to remove this book from your cart?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, remove'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/cart/${itemNo}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cartId: cartId })
+                }).then(() => {
+                    loadCart();
+                    const Toast = Swal.mixin({
+                        toast: true, position: 'top-end', showConfirmButton: false, timer: 1500
+                    });
+                    Toast.fire({ icon: 'success', title: 'Item removed' });
+                });
+            }
+        });
+    }
+
+    function checkout() {
+        if(document.getElementById("cartTotal").innerText === "0.00") {
+            Swal.fire('Empty Cart', 'Please add some books first!', 'info');
+            return;
+        }
+
+        // Check if cart has printed books
+        fetch(`http://127.0.0.1:5000/api/cart?accountId=${user.accountID}`)
+            .then(res => res.json())
+            .then(cartItems => {
+                const hasPrintedBooks = cartItems.some(item => item.FormatType === 'Printed');
+                
+                if (hasPrintedBooks) {
+                    // Ask for address for printed books
+                    Swal.fire({
+                        title: 'Shipping Address',
+                        text: 'Your order contains printed books. Please provide a delivery address.',
+                        html: `
+                            <div class="text-start">
+                                <label for="addressInput" class="form-label">Delivery Address</label>
+                                <textarea id="addressInput" class="form-control" rows="3" placeholder="Enter your complete address (Street, City, Postal Code, Country)"></textarea>
+                            </div>
+                        `,
+                        input: 'hidden',
+                        showCancelButton: true,
+                        confirmButtonText: 'Continue to Order',
+                        confirmButtonColor: '#198754',
+                        preConfirm: () => {
+                            const address = document.getElementById('addressInput').value.trim();
+                            if (!address) {
+                                Swal.showValidationMessage('Please enter a delivery address');
+                                return false;
+                            }
+                            return address;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            placeOrder(result.value);
+                        }
+                    });
+                } else {
+                    // No printed books, skip address
+                    showCheckoutConfirmation();
+                }
+            });
+    }
+
+    function showCheckoutConfirmation() {
+        Swal.fire({
+            title: 'Confirm Checkout',
+            text: "Create order from these items?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Place Order',
+            confirmButtonColor: '#198754'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                placeOrder(null);
+            }
+        });
+    }
+
+    function placeOrder(address) {
+        Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
+        
+        const orderData = { accountId: user.accountID };
+        if (address) {
+            orderData.deliveryAddress = address;
+        }
+        
+        fetch('http://127.0.0.1:5000/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.orderId) {
+                Swal.fire({
+                    icon: 'success', 
+                    title: 'Order Created!', 
+                    text: address ? 'Your order has been placed. Delivery address recorded.' : 'Your cart has been cleared.',
+                    timer: 2000,
+                    showConfirmButton: false
+                })
+                .then(() => window.location.href = `order.html?orderId=${data.orderId}`);
+            } else {
+                Swal.fire('Error', data.error || 'Unknown error', 'error');
+            }
+        });
+    }
+
+    loadCart();
+</script>
+</body>
+</html>
