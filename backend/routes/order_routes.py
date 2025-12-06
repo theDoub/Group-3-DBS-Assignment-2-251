@@ -10,6 +10,7 @@ def list_discounts():
     """
     Lấy danh sách tất cả discount có sẵn.
     """
+    print("[list_discounts] Fetching all discounts")
     sql = """
         SELECT 
             DiscountID,
@@ -27,33 +28,11 @@ def list_discounts():
 @order_bp.get("")
 def list_orders():
     """
-<<<<<<< HEAD
-    Liệt kê các Order, join với CustomerAccount để hiện thông tin khách hàng.
-    """
-    account_id = request.args.get("accountId")
-    print(f"--DEBUG[list_orders] account_id: {account_id}")
-    if not account_id:
-        return jsonify({"error": "accountID is not provided"}), 400
-    
-    sql = """
-        SELECT 
-            O.OrderID,
-            O.OrderDate,
-            O.Status,
-            O.TotalAmount
-        FROM `Order` O
-        JOIN CustomerAccount CA ON O.AccountID = CA.AccountID
-        WHERE O.AccountID = %s
-        ORDER BY O.OrderDate DESC
-    """
-    orders = query_all(sql, [account_id])
-    return jsonify(orders)
-=======
     Liệt kê các Order với phân quyền:
     - Customer: chỉ xem order của mình
     - Super Admin / Order Manager: xem tất cả order
     """
-    account_id = request.args.get('account_id')
+    account_id = request.args.get('accountId')
     roles = request.args.get('roles', '')  # Comma-separated roles
     
     if not account_id:
@@ -99,46 +78,38 @@ def list_orders():
     
     return jsonify(rows)
 
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 
 # For details of a specific order
 @order_bp.get("/<order_id>")
 def get_order_detail(order_id):
-<<<<<<< HEAD
-=======
     """
     Chi tiết đơn hàng với phân quyền:
     - Customer: chỉ xem order của mình
     - Super Admin / Order Manager: xem tất cả order
     """
-    account_id = request.args.get('account_id')
+    account_id = request.args.get('accountId')
+    
     roles = request.args.get('roles', '')
     
     if not account_id:
+        print("account_id is missing in request")
         return jsonify({"error": "account_id is required"}), 400
     
+    print(f"Fetching details for OrderID: {order_id} by AccountID: {account_id} with roles: {roles}")
     # Parse roles
     role_list = [r.strip() for r in roles.split(',') if r.strip()]
     is_admin = 'Super Admin' in role_list or 'Order Manager' in role_list
     
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
     order = query_one(
         """
         SELECT 
             O.OrderID,
-<<<<<<< HEAD
-            O.OrderDate,
-            O.Status,
-            O.TotalAmount,
-            CA.Name AS CustomerName
-=======
             O.AccountID,
             O.OrderDate,
             O.Status,
             O.TotalAmount,
             CA.Name AS CustomerName,
             CA.DeliveryAddress
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         FROM `Order` O
         JOIN CustomerAccount CA ON O.AccountID = CA.AccountID
         WHERE O.OrderID = %s
@@ -148,13 +119,10 @@ def get_order_detail(order_id):
 
     if not order:
         return jsonify({"error": "Order not found"}), 404
-<<<<<<< HEAD
-=======
     
     # SECURITY CHECK: Customer chỉ xem được order của mình
     if not is_admin and order['AccountID'] != account_id:
         return jsonify({"error": "Unauthorized: You can only view your own orders"}), 403
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 
     items = query_all(
         """
@@ -165,33 +133,21 @@ def get_order_detail(order_id):
             OI.Quantity,
             OI.PricePerItem,
             OI.PriceAtPurchase,
-<<<<<<< HEAD
-            getTitleByFormatID(OI.FormatID) AS BookTitle,
-            GROUP_CONCAT(AD.DiscountID SEPARATOR ', ') AS AppliedDiscounts
-        FROM OrderItem OI
-        LEFT JOIN DiscountApply AD ON OI.OrderID = AD.OrderID AND OI.OrderNo = AD.OrderNo
-        LEFT JOIN Format F ON OI.FormatID = F.FormatID
-=======
             B.Title AS BookTitle,
-            B.BookID
+            B.BookID,
+            GROUP_CONCAT(DISTINCT D.Name ORDER BY D.Name SEPARATOR ', ') AS AppliedDiscounts
         FROM OrderItem OI
+        LEFT JOIN DiscountApply DA ON OI.OrderID = DA.OrderID AND OI.OrderNo = DA.OrderNo
+        LEFT JOIN Discount D ON DA.DiscountID = D.DiscountID
         JOIN Format F ON OI.FormatID = F.FormatID
         JOIN Edition E ON F.EditionID = E.EditionID
         JOIN Book B ON E.BookID = B.BookID
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         WHERE OI.OrderID = %s
         GROUP BY OI.OrderNo, OI.FormatID, OI.Quantity, OI.PricePerItem, OI.PriceAtPurchase
         ORDER BY OI.OrderNo
         """,
         [order_id],
     )
-<<<<<<< HEAD
-
-    order["items"] = items
-    return jsonify(order)
-
-
-=======
     
     # Get delivery info
     delivery = query_one(
@@ -221,58 +177,60 @@ def get_order_detail(order_id):
     return jsonify(order)
 
 
-@order_bp.put("/<order_id>/status")
-def update_order_status(order_id):
+# NEW: User submits payment (creates payment record, status stays pending)
+@order_bp.post("/<order_id>/submit-payment")
+def submit_payment(order_id):
     """
-    Cập nhật trạng thái đơn hàng - chỉ dành cho Super Admin và Order Manager
+    Customer submits payment. Creates Payment record but order stays PENDING
+    waiting for admin approval.
     """
     data = request.get_json() or {}
-    account_id = data.get('account_id')
-    roles = data.get('roles', '')
-    new_status = data.get('status')
+    account_id = data.get("accountId")
+    payment_method = data.get("paymentMethod", "credit_card")
     
-    if not account_id or not new_status:
-        return jsonify({"error": "account_id and status are required"}), 400
+    if not account_id:
+        print("accountId is missing in request")
+        return jsonify({"error": "accountId required"}), 400
     
-    # Parse roles và kiểm tra quyền
-    role_list = [r.strip() for r in roles.split(',') if r.strip()]
-    is_admin = 'Super Admin' in role_list or 'Order Manager' in role_list
+    print(f"[submit_payment] AccountID {account_id} submitting payment for OrderID {order_id} using {payment_method}")
     
-    if not is_admin:
-        return jsonify({"error": "Unauthorized: Only Super Admin or Order Manager can update order status"}), 403
+    # Verify order exists and belongs to user
+    order = query_one(
+        "SELECT OrderID, AccountID FROM `Order` WHERE OrderID = %s",
+        [order_id]
+    )
     
-    # Validate status
-    valid_statuses = ['pending', 'processing', 'confirmed', 'delivered', 'cancelled']
-    if new_status not in valid_statuses:
-        return jsonify({"error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"}), 400
-    
-    # Check order exists
-    order = query_one("SELECT OrderID, Status FROM `Order` WHERE OrderID = %s", [order_id])
     if not order:
         return jsonify({"error": "Order not found"}), 404
     
-    # Update status
-    execute("UPDATE `Order` SET Status = %s WHERE OrderID = %s", [new_status, order_id])
+    if order['AccountID'] != account_id:
+        return jsonify({"error": "Unauthorized"}), 403
     
-    # Also update delivery status if applicable
-    if new_status == 'confirmed':
-        execute("UPDATE Delivery SET Status = 'preparing' WHERE OrderID = %s", [order_id])
-    elif new_status == 'processing':
-        execute("UPDATE Delivery SET Status = 'shipped' WHERE OrderID = %s", [order_id])
-    elif new_status == 'delivered':
-        execute("UPDATE Delivery SET Status = 'delivered' WHERE OrderID = %s", [order_id])
-    elif new_status == 'cancelled':
-        execute("UPDATE Delivery SET Status = 'cancelled' WHERE OrderID = %s", [order_id])
-    
-    return jsonify({
-        "message": "Order status updated successfully",
-        "orderId": order_id,
-        "oldStatus": order['Status'],
-        "newStatus": new_status
-    })
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        
+        # Create payment record
+        cursor.execute("""
+            INSERT INTO Payment (OrderID, Method, PaymentDate, Status)
+            VALUES (%s, %s, NOW(), 'pending')
+        """, [order_id, payment_method])
+        
+        conn.commit()
+
+        print(f"[submit_payment] Payment record created for OrderID {order_id}")
+        
+        return jsonify({
+            "message": "Payment submitted successfully. Waiting for admin approval.",
+            "orderId": order_id,
+            "status": "pending"
+        }), 201
+        
+    finally:
+        cursor.close()
+        conn.close()
 
 
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
 @order_bp.post("/<order_id>/recalculate-total")
 def recalculate_total(order_id):
     """
@@ -310,7 +268,10 @@ def apply_discount(order_id):
     order_id = data.get("orderID") # Nhận thêm từ body cho chắc
 
     if not discount_id or not order_no:
+        print("[apply_discount] Missing discountID or orderNo in request")
         return jsonify({"error": "Thiếu thông tin discountID hoặc orderNo"}), 400
+
+    print(f"[apply_discount] Applying discountID {discount_id} to OrderID {order_id}, OrderNo {order_no}")
 
     order_item = query_one(
         "SELECT OrderID FROM OrderItem WHERE OrderID = %s AND OrderNo = %s",
@@ -385,12 +346,28 @@ def delete_discount(order_id):
     order_no = data.get("orderNo")
     
     if not discount_id or not order_no:
+        print("[delete_discount] Missing discountID or orderNo in request")
         return jsonify({"error": "discountID, orderNo required"}), 400
+
+    print(f"[delete_discount] Removing discountID {discount_id} from OrderID {order_id}, OrderNo {order_no}")
 
     conn = get_connection()
     try:
         cursor = conn.cursor(dictionary=True)
         
+        # 1. Get DiscountID by discount name
+        cursor.execute(
+            "SELECT DiscountID FROM Discount WHERE Name = %s",
+            [discount_id]
+        )
+        discount_row = cursor.fetchone()
+        
+        if not discount_row:
+            return jsonify({"error": f"Discount '{discount_id}' not found"}), 404
+        
+        discount_id = discount_row['DiscountID']
+        
+        # 2. Delete from DiscountApply table
         cursor.execute(
             "DELETE FROM DiscountApply WHERE DiscountID = %s AND OrderID = %s AND OrderNo = %s",
             [discount_id, order_id, order_no]
@@ -436,7 +413,7 @@ def create_order():
         order = query_one(
             "SELECT OrderID FROM `Order` ORDER BY OrderDate DESC, OrderID DESC LIMIT 1"
         )
-        print(f"--DEBUG create_order: created order = {order}")
+        print(f"[create_order] Order created: {order}")
 
         # Get CartItems
         cart_items = query_all(
@@ -466,6 +443,8 @@ def create_order():
         #    [account_id]
         # )
         # conn.commit()
+
+        print(f"[create_order] Successfully added items to OrderID {order['OrderID']}")
         
         return jsonify({"orderId": order["OrderID"], "message": "Order created"}), 201
         
@@ -515,7 +494,7 @@ def add_order_item(order_id):
         cursor.close()
         conn.close()
 
-# --- NEW: API ĐỂ CẬP NHẬT TRẠNG THÁI (PAY NOW / CANCEL) ---
+
 @order_bp.put("/<order_id>/status")
 def update_order_status(order_id):
     """
@@ -539,3 +518,10 @@ def update_order_status(order_id):
         return jsonify({"message": f"Order status updated to {new_status}"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
+
+
+# --- ADMIN ENDPOINTS FOR PAYMENTS AND DELIVERIES ---
+

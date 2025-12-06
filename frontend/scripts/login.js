@@ -34,13 +34,10 @@ async function handleLogin(event) {
         
         if (response.ok) {
             // Login successful - save to localStorage
-            localStorage.setItem('accountID', data.accountID);
-            localStorage.setItem('username', data.username);
-            localStorage.setItem('roles', JSON.stringify(data.roles || ['Customer']));
-            localStorage.setItem('isLoggedIn', 'true');
+             localStorage.setItem("user", JSON.stringify(data));
             
             // Redirect to home page
-            window.location.href = 'index.html';
+            window.location.href = 'home.html';
         } else {
             // Show error message
             showError(data.error || 'Login failed. Please try again.');
@@ -58,15 +55,18 @@ async function handleLogin(event) {
 // Show error message
 function showError(message) {
     const errorMessage = document.getElementById('errorMessage');
-    errorMessage.textContent = message;
+    errorMessage.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + message;
     errorMessage.classList.add('show');
 }
 
 // Check if user is already logged in
 document.addEventListener('DOMContentLoaded', function() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-        // User is already logged in, redirect to home
-        window.location.href = 'index.html';
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+        console.log("Login status:", user.message);
+        if (user.message === 'Login successful') {
+            // User is already logged in, redirect to home
+            window.location.href = 'home.html';
+        }
     }
 });

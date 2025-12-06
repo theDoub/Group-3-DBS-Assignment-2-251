@@ -1,532 +1,459 @@
-// API Base URL
-const API_BASE = 'http://localhost:5000/api';
-
-// Global variables
-let allOrders = [];
-let currentFilter = 'all';
+let username = null;
 let accountID = null;
-let roles = [];
-let isAdmin = false;
+let discountModalObj = null;
 
-// Check authentication and load orders
 document.addEventListener('DOMContentLoaded', function() {
-    checkLoginStatus();
-    loadOrders();
-    setupFilterButtons();
+    try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            username = user.username;
+            accountID = user.accountID;
+
+            // Check if user is Super Admin
+            if (user.roles && user.roles.includes("Super Admin")) {
+                console.log("Redirecting Super Admin to orders-admin.html");
+                window.location.href = "orders-admin.html";
+                return;
+            }
+        }
+    } catch(e) {
+        console.error("Error accessing localStorage:", e);
+    }
+
+    if (!accountID) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    document.getElementById("welcomeUser").innerText = `Hi, ${username}`;
+
+
+    // Initialize modal after DOM is ready
+    const discountModalEl = document.getElementById('discountModal');
+    if (discountModalEl) {
+        discountModalObj = new bootstrap.Modal(discountModalEl);
+    }
+
+    // Check for order ID in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramOrderId = urlParams.get('orderId');
+
+    if (paramOrderId) {
+        showOrderDetail(paramOrderId);
+    } else {
+        loadOrdersList();
+    }
 });
 
-// Check login status
-function checkLoginStatus() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const username = localStorage.getItem('username');
-    accountID = localStorage.getItem('accountID');
-    const rolesStr = localStorage.getItem('roles');
-    roles = rolesStr ? JSON.parse(rolesStr) : [];
-    
-    const authSection = document.getElementById('authSection');
-    const roleInfo = document.getElementById('roleInfo');
-    
-    // Check if user is admin
-    isAdmin = roles.includes('Super Admin') || roles.includes('Order Manager');
-    
-    if (isLoggedIn === 'true' && username) {
-        authSection.innerHTML = `
-            <span class="user-info">👤 ${username}</span>
-            <button class="btn-logout" onclick="handleLogout()">Logout</button>
-        `;
-        
-        if (isAdmin) {
-            roleInfo.textContent = 'You have permission to view all orders';
-        } else {
-            roleInfo.textContent = 'Your orders list';
-        }
-    } else {
-        authSection.innerHTML = `
-            <button class="btn-login" onclick="window.location.href='login.html'">Login</button>
-        `;
-        alert('Please login to view orders');
-        window.location.href = 'login.html';
-    }
-}
+// Global variables
+let currentOrderId = null;
+let currentOrderNo = null;
+let currentItemPrice = 0;
+let currentItemQty = 1;
+let currentOrderTotal = 0;
 
-// Handle logout
-function handleLogout() {
+function logout() {
+    localStorage.removeItem('user');
     localStorage.removeItem('accountID');
     localStorage.removeItem('username');
-    localStorage.removeItem('roles');
-    localStorage.removeItem('isLoggedIn');
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
-// Load orders from API
-async function loadOrders() {
-    const loading = document.getElementById('loading');
-    const emptyOrders = document.getElementById('emptyOrders');
-    const ordersContent = document.getElementById('ordersContent');
-    
-    if (!accountID) {
-        loading.style.display = 'none';
-        emptyOrders.style.display = 'block';
-        return;
-    }
-    
-    try {
-        const rolesParam = roles.join(',');
-        const response = await fetch(`${API_BASE}/orders?account_id=${accountID}&roles=${encodeURIComponent(rolesParam)}`);
-        
-        if (!response.ok) {
-            throw new Error('Failed to load orders');
-        }
-        
-        allOrders = await response.json();
-        
-        loading.style.display = 'none';
-        
-        if (allOrders.length === 0) {
-            emptyOrders.style.display = 'block';
-            ordersContent.style.display = 'none';
-        } else {
-            emptyOrders.style.display = 'none';
-            ordersContent.style.display = 'block';
-            renderOrders();
-        }
-    } catch (error) {
-        console.error('Error loading orders:', error);
-        loading.innerHTML = '<p style="color: red;">Error loading orders list</p>';
-    }
-}
-
-// Setup filter buttons
-function setupFilterButtons() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.dataset.status;
-            renderOrders();
-        });
-    });
-}
-
-// Render orders list
-function renderOrders() {
-    const ordersList = document.getElementById('ordersList');
-    ordersList.innerHTML = '';
-    
-    // Filter orders
-    const filteredOrders = currentFilter === 'all' 
-        ? allOrders 
-        : allOrders.filter(order => order.Status === currentFilter);
-    
-    if (filteredOrders.length === 0) {
-        ordersList.innerHTML = `
-            <div class="empty-state">
-                <p>No orders with this status</p>
+function backToOrders() {
+    // Change inner HTML of hero banner
+    const heroBanner = document.querySelector('.hero-banner');
+    if (heroBanner) {
+        heroBanner.innerHTML = `
+            <div class="position-relative" style="z-index:1;">
+                <h2 class="fw-bold mb-2">
+                    <i class="bi bi-list-check me-2"></i>My Orders History
+                </h2>
+                <p class="mb-3 hero-stats">
+                    Review your past orders and manage your purchases all in one place.
+                </p>
             </div>
         `;
-        return;
     }
-    
-    filteredOrders.forEach(order => {
-        const orderCard = document.createElement('div');
-        orderCard.className = 'order-card';
-        orderCard.onclick = () => viewOrderDetail(order.OrderID);
-        
-        const statusClass = `status-${order.Status}`;
-        const statusText = getStatusText(order.Status);
-        const orderDate = new Date(order.OrderDate).toLocaleString('vi-VN');
-        
-        orderCard.innerHTML = `
-            <div class="order-header">
-                <div class="order-id">Đơn hàng: ${order.OrderID}</div>
-                <span class="order-status ${statusClass}">${statusText}</span>
-            </div>
-            <div class="order-info">
-                ${isAdmin ? `
-                <div class="info-item">
-                    <span class="info-label">Khách hàng</span>
-                    <span class="info-value">${order.CustomerName}</span>
-                </div>
-                ` : ''}
-                <div class="info-item">
-                    <span class="info-label">Ngày đặt</span>
-                    <span class="info-value">${orderDate}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Tổng tiền</span>
-                    <span class="info-value order-total">${formatPrice(order.TotalAmount)}</span>
-                </div>
-            </div>
-            <div class="order-footer">
-                <button class="btn-view-detail" onclick="event.stopPropagation(); viewOrderDetail('${order.OrderID}')">
-                    Xem Chi Tiết
-                </button>
-            </div>
-        `;
-        
-        ordersList.appendChild(orderCard);
-    });
+    document.getElementById("ordersListSection").style.display = 'block';
+    document.getElementById("orderDetailsSection").style.display = 'none';
+    window.history.pushState({}, "", "order.html");
+    loadOrdersList();
 }
 
-// Get status text in English
-function getStatusText(status) {
-    const statusMap = {
-        'pending': 'Pending',
-        'processing': 'Processing',
-        'confirmed': 'Confirmed',
-        'delivered': 'Delivered',
-        'cancelled': 'Cancelled'
-    };
-    return statusMap[status] || status;
-}
-
-// View order detail
-async function viewOrderDetail(orderId) {
-    const modal = document.getElementById('orderModal');
-    const content = document.getElementById('orderDetailContent');
-    
-    content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading details...</p></div>';
-    modal.style.display = 'block';
-    
-    try {
-        const rolesParam = roles.join(',');
-        const response = await fetch(`${API_BASE}/orders/${orderId}?account_id=${accountID}&roles=${encodeURIComponent(rolesParam)}`);
+function loadOrdersList() {
+    fetch(`http://127.0.0.1:5000/api/orders?accountId=${accountID}`)
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById('ordersContainer');
+        container.innerHTML = '';
         
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to load order details');
-        }
-        
-        const order = await response.json();
-        renderOrderDetail(order);
-    } catch (error) {
-        console.error('Error loading order detail:', error);
-        content.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-    }
-}
-
-// Render order detail in modal
-function renderOrderDetail(order) {
-    const content = document.getElementById('orderDetailContent');
-    const orderDate = new Date(order.OrderDate).toLocaleString('vi-VN');
-    const statusClass = `status-${order.Status}`;
-    const statusText = getStatusText(order.Status);
-    
-    let html = `
-        <!-- Order Information -->
-        <div class="order-detail-section">
-            <h3>Thông Tin Đơn Hàng</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Mã đơn hàng</span>
-                    <span class="detail-value">${order.OrderID}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Trạng thái</span>
-                    <div>
-                        <span class="order-status ${statusClass}" id="currentStatus">${statusText}</span>
-                        ${isAdmin ? `
-                        <div class="status-change-section" style="margin-top: 1rem;">
-                            <select id="statusSelect" class="status-select">
-                                <option value="">-- Thay đổi trạng thái --</option>
-                                <option value="pending" ${order.Status === 'pending' ? 'disabled' : ''}>Chờ xử lý</option>
-                                <option value="processing" ${order.Status === 'processing' ? 'disabled' : ''}>Đang xử lý</option>
-                                <option value="confirmed" ${order.Status === 'confirmed' ? 'disabled' : ''}>Đã xác nhận</option>
-                                <option value="delivered" ${order.Status === 'delivered' ? 'disabled' : ''}>Đã giao</option>
-                                <option value="cancelled" ${order.Status === 'cancelled' ? 'disabled' : ''}>Đã hủy</option>
-                            </select>
-                            <button class="btn-update-status" onclick="updateOrderStatus('${order.OrderID}')">Cập nhật</button>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Ngày đặt</span>
-                    <span class="detail-value">${orderDate}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Tổng tiền</span>
-                    <span class="detail-value order-total">${formatPrice(order.TotalAmount)}</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Customer Information -->
-        <div class="order-detail-section">
-            <h3>Thông Tin Khách Hàng</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Tên khách hàng</span>
-                    <span class="detail-value">${order.CustomerName}</span>
-                </div>
-                ${order.DeliveryAddress ? `
-                <div class="detail-item">
-                    <span class="detail-label">Địa chỉ giao hàng</span>
-                    <span class="detail-value">${order.DeliveryAddress}</span>
-                </div>
-                ` : ''}
-            </div>
-        </div>
-        
-        <!-- Delivery Information -->
-        ${order.delivery ? `
-        <div class="order-detail-section">
-            <h3>Thông Tin Vận Chuyển</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Trạng thái vận chuyển</span>
-                    <span class="detail-value">${order.delivery.Status}</span>
-                </div>
-                ${order.delivery.Carrier ? `
-                <div class="detail-item">
-                    <span class="detail-label">Đơn vị vận chuyển</span>
-                    <span class="detail-value">${order.delivery.Carrier}</span>
-                </div>
-                ` : ''}
-                ${order.delivery.TrackingNumber ? `
-                <div class="detail-item">
-                    <span class="detail-label">Mã vận đơn</span>
-                    <span class="detail-value">${order.delivery.TrackingNumber}</span>
-                </div>
-                ` : ''}
-                ${order.delivery.ExpectedShippingDate ? `
-                <div class="detail-item">
-                    <span class="detail-label">Ngày giao dự kiến</span>
-                    <span class="detail-value">${new Date(order.delivery.ExpectedShippingDate).toLocaleDateString('vi-VN')}</span>
-                </div>
-                ` : ''}
-            </div>
-        </div>
-        ` : ''}
-        
-        <!-- Order Items -->
-        <div class="order-detail-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin: 0;">Sản Phẩm</h3>
-                ${isAdmin ? `
-                <button class="btn-recalculate" onclick="recalculateOrderTotal('${order.OrderID}')">
-                    🔄 Tính Lại Tổng Tiền
-                </button>
-                ` : ''}
-            </div>
-            <table class="order-items-table">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên sách</th>
-                        <th>Số lượng</th>
-                        <th>Đơn giá</th>
-                        <th>Thành tiền</th>
-                        ${isAdmin ? '<th>Giảm giá</th>' : ''}
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    order.items.forEach((item, index) => {
-        const discount = order.discounts.find(d => d.OrderNo === item.OrderNo);
-        html += `
-            <tr>
-                <td>${index + 1}</td>
-                <td>
-                    <div class="item-title">${item.BookTitle}</div>
-                    <div class="item-format">Format: ${item.FormatID}</div>
-                    ${discount ? `
-                    <div class="discount-badge">
-                        🎉 Giảm giá: ${discount.Name} 
-                        ${discount.Type === 'percentage' ? `${discount.Value}%` : formatPrice(discount.Value)}
-                    </div>
-                    ` : ''}
-                </td>
-                <td>${item.Quantity}</td>
-                <td>${formatPrice(item.PricePerItem)}</td>
-                <td><strong>${formatPrice(item.PriceAtPurchase)}</strong></td>
-                ${isAdmin ? `
-                <td>
-                    ${!discount ? `
-                    <button class="btn-apply-discount" onclick="showDiscountForm('${order.OrderID}', ${item.OrderNo})">
-                        + Áp dụng
-                    </button>
-                    ` : '<span style="color: green;">✓ Đã áp dụng</span>'}
-                </td>
-                ` : ''}
-            </tr>
-        `;
-    });
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    content.innerHTML = html;
-}
-
-// Update order status (Admin only)
-async function updateOrderStatus(orderId) {
-    const statusSelect = document.getElementById('statusSelect');
-    const newStatus = statusSelect.value;
-    
-    if (!newStatus) {
-        alert('Please select a new status');
-        return;
-    }
-    
-    if (!confirm(`Are you sure you want to change order status to "${getStatusText(newStatus)}"?`)) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE}/orders/${orderId}/status`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                account_id: accountID,
-                roles: roles.join(','),
-                status: newStatus
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            alert('Status updated successfully!');
-            
-            // Reload orders and modal
-            await loadOrders();
-            await viewOrderDetail(orderId);
-        } else {
-            const error = await response.json();
-            alert(error.error || 'Unable to update status');
-        }
-    } catch (error) {
-        console.error('Error updating status:', error);
-        alert('Error connecting to server');
-    }
-}
-
-// Recalculate order total (Admin only)
-async function recalculateOrderTotal(orderId) {
-    if (!confirm('Are you sure you want to recalculate this order total?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE}/orders/${orderId}/recalculate-total`, {
-            method: 'POST'
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            alert(`Recalculated successfully! New total: ${formatPrice(result.order.TotalAmount)}`);
-            
-            // Reload orders and modal
-            await loadOrders();
-            await viewOrderDetail(orderId);
-        } else {
-            const error = await response.json();
-            alert(error.error || 'Unable to recalculate total');
-        }
-    } catch (error) {
-        console.error('Error recalculating total:', error);
-        alert('Error connecting to server');
-    }
-}
-
-// Show discount form (Admin only)
-async function showDiscountForm(orderId, orderNo) {
-    // Load available discounts
-    try {
-        const response = await fetch(`${API_BASE}/discounts`);
-        if (!response.ok) {
-            throw new Error('Failed to load discounts');
-        }
-        
-        const discounts = await response.json();
-        
-        if (discounts.length === 0) {
-            alert('No discount codes available');
+        if(!data || data.length === 0) {
+            container.innerHTML = `<div class="col-12 text-center py-5 text-muted"><i class="bi bi-inbox" style="font-size: 2rem; color: var(--primary-soft);"></i><br><br>You haven't placed any orders yet.</div>`;
             return;
         }
         
-        // Create select options
-        let options = '<option value="">-- Select discount code --</option>';
-        discounts.forEach(d => {
-            const valueText = d.Type === 'percentage' ? `${d.Value}%` : formatPrice(d.Value);
-            options += `<option value="${d.DiscountID}">${d.Name} - ${valueText} ${d.Conditions ? `(${d.Conditions})` : ''}</option>`;
-        });
-        
-        const discountId = prompt(`Select discount code for item #${orderNo}:\n\n${discounts.map((d, i) => 
-            `${i + 1}. ${d.Name} - ${d.Type === 'percentage' ? d.Value + '%' : formatPrice(d.Value)} ${d.Conditions ? '(' + d.Conditions + ')' : ''}`
-        ).join('\n')}\n\nEnter number:`);
-        
-        if (discountId) {
-            const index = parseInt(discountId) - 1;
-            if (index >= 0 && index < discounts.length) {
-                await applyDiscountToItem(orderId, orderNo, discounts[index].DiscountID);
-            } else {
-                alert('Invalid selection');
+        data.forEach(o => {
+            let badgeClass = 'status-pending';
+            let badgeIcon = '<i class="bi bi-hourglass-split me-1"></i>';
+            if(o.Status === 'confirmed') {
+                badgeClass = 'status-confirmed';
+                badgeIcon = '<i class="bi bi-check-circle me-1"></i>';
+            } else if(o.Status === 'cancelled') {
+                badgeClass = 'status-cancelled';
+                badgeIcon = '<i class="bi bi-x-circle me-1"></i>';
             }
-        }
-    } catch (error) {
-        console.error('Error loading discounts:', error);
-        alert('Error loading discount codes list');
-    }
-}
 
-// Apply discount to order item (Admin only)
-async function applyDiscountToItem(orderId, orderNo, discountId) {
-    try {
-        const response = await fetch(`${API_BASE}/orders/${orderId}/apply-discount`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                discountID: discountId,
-                orderNo: orderNo
-            })
+            container.innerHTML += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 order-card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title fw-bold" style="color: var(--primary);">#${o.OrderID}</h5>
+                                <span class="badge ${badgeClass} text-dark fs-6">${badgeIcon}${o.Status.toUpperCase()}</span>
+                            </div>
+                            <p class="card-text text-muted mb-2"><i class="bi bi-calendar3 me-2"></i>${o.OrderDate}</p>
+                            <h3 class="fw-bold my-3" style="color: var(--accent);">$${o.TotalAmount}</h3>
+                            <button onclick="showOrderDetail('${o.OrderID}')" class="btn btn-outline-primary w-100 fw-500">
+                                View Details <i class="bi bi-chevron-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
+    });
+}
+
+function showOrderDetail(orderId) {
+
+    currentOrderId = orderId;
+    document.getElementById("ordersListSection").style.display = 'none';
+    document.getElementById("orderDetailsSection").style.display = 'block';
+    
+    const heroBanner = document.querySelector('.hero-banner');
+    if (heroBanner) {
+        heroBanner.innerHTML = `
+            <div class="position-relative" style="z-index:1;">
+                <h2 class="fw-bold mb-2">
+                    <i class="bi bi-receipt me-2"></i>My Order Details
+                </h2>
+                <p class="mb-3 hero-stats">
+                    Review the details of your order and manage your purchases.
+                </p>
+                <button id="backToOrdersBtn"
+                onclick="backToOrders()"><i class="bi bi-arrow-left me-1"></i>My Order History</button>
+            </div>
+        `;
+    }
+
+
+    document.getElementById("itemsTable").innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+
+    fetch(`http://127.0.0.1:5000/api/orders/${orderId}?accountId=${accountID}`)
+    .then(res => res.json())
+    .then(order => {
+        document.getElementById("d_orderId").innerText = order.OrderID;
+        document.getElementById("d_status").innerText = order.Status.toUpperCase();
+        document.getElementById("d_date").innerText = order.OrderDate;
+        document.getElementById("d_total").innerText = order.TotalAmount;
         
-        const result = await response.json();
-        
-        if (response.ok) {
-            alert(result.message || 'Discount code applied successfully!');
-            
-            // Reload orders and modal
-            await loadOrders();
-            await viewOrderDetail(orderId);
-        } else {
-            alert(result.message || result.error || 'Unable to apply discount code');
+        // Set status badge color
+        const statusBadge = document.getElementById("d_status");
+        if (order.Status === 'pending') {
+            statusBadge.className = 'badge status-pending fs-5 px-5 py-3 rounded-pill';
+            statusBadge.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>PENDING';
+        } else if (order.Status === 'confirmed') {
+            statusBadge.className = 'badge status-confirmed fs-5 px-5 py-3 rounded-pill';
+            statusBadge.innerHTML = '<i class="bi bi-check-circle me-2"></i>CONFIRMED';
+        } else if (order.Status === 'cancelled') {
+            statusBadge.className = 'badge status-cancelled fs-5 px-5 py-3 rounded-pill';
+            statusBadge.innerHTML = '<i class="bi bi-x-circle me-2"></i>CANCELLED';
         }
-    } catch (error) {
-        console.error('Error applying discount:', error);
-        alert('Error connecting to server');
+        
+        const hasPrintedBooks = order.items && order.items.some(item => item.FormatType === 'Printed');
+        const deliveryAddressSection = document.getElementById('deliveryAddressSection');
+        
+        if (hasPrintedBooks && order.DeliveryAddress) {
+            document.getElementById('deliveryAddress').innerText = order.DeliveryAddress;
+            deliveryAddressSection.style.display = 'block';
+        } else {
+            deliveryAddressSection.style.display = 'none';
+        }
+        
+        currentOrderTotal = parseFloat(order.TotalAmount);
+
+        const tbody = document.getElementById("itemsTable");
+        tbody.innerHTML = order.items.map(item => {
+            console.log("Order Item:", item);
+            const hasDiscount = item.AppliedDiscounts && item.AppliedDiscounts.trim().length > 0;
+            let actionBtn = '';
+            console.log("Order Status:", order.Status);
+            console.log("Discount Applied:", hasDiscount);
+            if (order.Status === 'pending') {
+                actionBtn = `
+                    <div class="d-flex gap-2 flex-nowrap">
+                        <button onclick="openDiscountModal(${item.OrderNo}, ${item.PricePerItem}, ${item.Quantity})" class="btn btn-sm btn-success"><i class="bi bi-ticket-perforated me-1"></i>Apply</button>
+                        <button onclick="removeDiscount(${item.OrderNo}, '${item.AppliedDiscounts}')" class="btn btn-sm btn-outline-danger" ${!hasDiscount ? 'disabled' : ''}><i class="bi bi-trash me-1"></i>Remove</button>
+                    </div>
+                `;
+            } else {
+                actionBtn = `<span class="text-muted small"><i class="bi bi-lock me-1"></i>Locked</span>`;
+            }
+
+            return `
+                <tr>
+                    <td class="fw-bold" style="color: var(--primary);">${item.BookTitle}</td>
+                    <td><span class="badge bg-light text-dark border border-primary">${item.FormatType}</span></td>
+                    <td class="text-center fw-bold">${item.Quantity}</td>
+                    <td class="text-muted"><s>$${item.PricePerItem}</s></td>
+                    <td class="fw-bold" style="color: var(--accent);">$${item.PriceAtPurchase}</td>
+                    <td>${hasDiscount ? `<span class="badge" style="background-color: var(--accent); color: white;"><i class="bi bi-tag-fill me-1"></i>${item.AppliedDiscounts}</span>` : '<small class="text-muted">-</small>'}</td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const actionDiv = document.getElementById("orderActions");
+        if(order.Status === 'pending') {
+            actionDiv.innerHTML = `
+                <button onclick="updateStatus('${order.OrderID}', 'cancelled')" class="btn btn-outline-danger btn-lg px-4">
+                    <i class="bi bi-x-circle me-1"></i>Cancel Order
+                </button>
+                <button onclick="updateStatus('${order.OrderID}', 'confirmed')" class="btn btn-success btn-lg px-4">
+                    <i class="bi bi-credit-card me-1"></i>Pay Now
+                </button>
+            `;
+        } else {
+            actionDiv.innerHTML = `<div class="py-2 fw-bold" style="color: var(--dark-text);">Status: <span style="color: var(--primary);">${order.Status.toUpperCase()}</span></div>`;
+        }
+    });
+}
+
+function updateStatus(orderId, newStatus) {
+    if (newStatus === 'confirmed') {
+        Swal.fire({
+            title: 'Submit Payment?',
+            text: 'Your payment will be submitted for admin approval.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            confirmButtonText: 'Yes, Submit Payment'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/orders/${orderId}/submit-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        accountId: accountID,
+                        paymentMethod: 'credit_card'
+                    })
+                })
+                .then(res => res.json())
+                .then(r => {
+                    Swal.fire({
+                        icon: 'success', 
+                        title: 'Payment Submitted!', 
+                        text: 'Your payment is awaiting admin approval.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => showOrderDetail(orderId));
+                })
+                .catch(err => {
+                    Swal.fire('Error', 'Failed to submit payment', 'error');
+                });
+            }
+        });
+    } else if (newStatus === 'cancelled') {
+        Swal.fire({
+            title: 'Cancel Order?',
+            text: 'Are you sure you want to cancel this order?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'Yes, Cancel Order'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`http://127.0.0.1:5000/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'cancelled' })
+                })
+                .then(res => res.json())
+                .then(r => {
+                    Swal.fire('Success', r.message, 'success').then(() => showOrderDetail(orderId));
+                });
+            }
+        });
     }
 }
 
-// Close order modal
-function closeOrderModal() {
-    const modal = document.getElementById('orderModal');
-    modal.style.display = 'none';
-}
+function openDiscountModal(orderNo, pricePerItem, quantity) {
+    currentOrderNo = orderNo;
+    currentItemPrice = pricePerItem;
+    currentItemQty = quantity;
 
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('orderModal');
-    if (event.target === modal) {
-        closeOrderModal();
+    const listDiv = document.getElementById("discountList");
+    listDiv.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+    
+    if (discountModalObj) {
+        discountModalObj.show();
     }
+
+    fetch("http://127.0.0.1:5000/api/orders/discounts")
+    .then(res => res.json())
+    .then(discounts => {
+        listDiv.innerHTML = '';
+        
+        if(!discounts || discounts.length === 0) {
+            listDiv.innerHTML = '<p class="text-center text-muted">No vouchers available.</p>';
+            return;
+        }
+
+        const processed = discounts.map(d => {
+            let isValid = true;
+            let reason = "";
+
+            const cond = d.Conditions ? d.Conditions.toLowerCase() : "";
+
+            if (cond.includes("over $50") && currentOrderTotal < 50) {
+                isValid = false;
+                reason = `Order total must be over $50 (Current: $${currentOrderTotal})`;
+            }
+            if (cond.includes("buy 2") && currentItemQty < 2) {
+                isValid = false;
+                reason = `Must buy at least 2 items (Current: ${currentItemQty})`;
+            }
+
+            let saving = 0;
+            if (isValid) {
+                if (d.Type === 'percentage') {
+                    saving = (currentItemPrice * d.Value) / 100;
+                } else {
+                    saving = d.Value;
+                }
+                if (saving > currentItemPrice) saving = currentItemPrice;
+            }
+
+            return { ...d, isValid, reason, saving: parseFloat(saving) };
+        });
+
+        processed.sort((a, b) => {
+            if (a.isValid !== b.isValid) return b.isValid - a.isValid; 
+            return b.saving - a.saving;
+        });
+
+        processed.forEach((d, index) => {
+            let cardClass = d.isValid ? "" : "discount-card disabled";
+            let clickAction = d.isValid ? `onclick="applyDiscount(${d.DiscountID})"` : "";
+            let badge = "";
+            
+            if (index === 0 && d.isValid) {
+                badge = `<span class="badge" style="background-color: var(--accent); color: white; margin-bottom: 0.5rem;"><i class="bi bi-star-fill me-1"></i>Recommended</span>`;
+            }
+
+            let statusHtml = "";
+            if (!d.isValid) {
+                statusHtml = `<div class="text-danger small fw-bold"><i class="bi bi-exclamation-circle me-1"></i>${d.reason}</div>`;
+            } else {
+                statusHtml = `<div class="fw-bold" style="color: var(--accent);"><i class="bi bi-percent me-1"></i>Save $${d.saving.toFixed(2)}</div>`;
+            }
+
+            listDiv.innerHTML += `
+                <div class="discount-card p-3 ${cardClass}" ${clickAction} style="${d.isValid ? 'cursor:pointer; border-color: var(--primary);' : 'cursor:not-allowed;'}">
+                    ${badge}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-bold ${d.isValid ? '' : 'text-muted'}" style="color: ${d.isValid ? 'var(--primary)' : 'inherit'};"><i class="bi bi-ticket-perforated me-1"></i>${d.Name}</h6>
+                            <small class="text-muted d-block fst-italic">${d.Conditions || 'No conditions'}</small>
+                            ${statusHtml}
+                        </div>
+                        <div class="text-end">
+                            <span class="d-block fw-bold fs-5" style="color: ${d.isValid ? 'var(--primary)' : '#ccc'};">
+                                ${d.Type === 'percentage' ? d.Value + '%' : '$' + d.Value} OFF
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    });
 }
 
-// Format price
-function formatPrice(price) {
-    if (price === null || price === undefined) return 'N/A';
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-    }).format(price);
+function applyDiscount(discountId) {
+    fetch(`http://127.0.0.1:5000/api/orders/${currentOrderId}/apply-discount`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discountID: discountId, orderNo: currentOrderNo, orderID: currentOrderId })
+    })
+    .then(res => res.json().then(body => ({ status: res.status, body })))
+    .then(r => {
+        if (discountModalObj) {
+            discountModalObj.hide();
+        }
+        if (r.status === 200) {
+            Swal.fire({ icon: 'success', title: 'Applied!', text: r.body.message, timer: 1000, showConfirmButton: false });
+            showOrderDetail(currentOrderId);
+        } else {
+            Swal.fire({ icon: 'error', title: 'Oops...', text: r.body.message || r.body.error });
+        }
+    });
+}
+
+function removeDiscount(orderNo, discountIds) {
+    // Parse all applied discounts
+    const discounts = discountIds.split(',').map(d => d.trim()).filter(d => d.length > 0);
+    
+    if (discounts.length === 0) {
+        Swal.fire('Info', 'No discounts to remove', 'info');
+        return;
+    }
+
+    // If only one discount, remove it directly
+    if (discounts.length === 1) {
+        confirmRemoveDiscount(orderNo, discounts[0]);
+        return;
+    }
+
+    // If multiple discounts, show selection dialog
+    let options = '<div class="discount-select-list">';
+    discounts.forEach((discount, index) => {
+        options += `<div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="discountSelect" id="discount${index}" value="${discount}" ${index === 0 ? 'checked' : ''}>
+            <label class="form-check-label" for="discount${index}">
+                ${discount}
+            </label>
+        </div>`;
+    });
+    options += '</div>';
+
+    Swal.fire({
+        title: 'Select Discount to Remove',
+        html: options,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Remove Selected'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const selected = document.querySelector('input[name="discountSelect"]:checked').value;
+            confirmRemoveDiscount(orderNo, selected);
+        }
+    });
+}
+
+function confirmRemoveDiscount(orderNo, discountId) {
+    fetch(`http://127.0.0.1:5000/api/orders/${currentOrderId}/delete-discount`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discountID: discountId, orderNo: orderNo, orderID: currentOrderId })
+    })
+    .then(res => res.json())
+    .then(() => {
+        Swal.fire('Removed!', 'Voucher removed.', 'success');
+        showOrderDetail(currentOrderId);
+    })
+    .catch(err => {
+        Swal.fire('Error', 'Failed to remove discount', 'error');
+    });
 }

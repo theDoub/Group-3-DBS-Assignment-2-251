@@ -19,8 +19,14 @@ function checkLoginStatus() {
     
     if (isLoggedIn === 'true' && username) {
         authSection.innerHTML = `
-            <span class="user-info">👤 ${username}</span>
-            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            <span class="user-info">
+                <i class="bi bi-person-circle icon-me-1"></i>
+                ${username}
+            </span>
+            <button class="btn-logout" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right icon-me-1"></i>
+                Logout
+            </button>
         `;
     } else {
         authSection.innerHTML = `
@@ -62,12 +68,20 @@ async function loadCart() {
         
         cartData = await response.json();
         
+        console.log('Loaded cart data:', cartData);
+
         loading.style.display = 'none';
+
+        // Check if data is an array (direct cart items) or object with items property
+        const items = Array.isArray(cartData) ? cartData : (cartData.items || []);
         
-        if (cartData.items.length === 0) {
+        // Safe check - verify cartData and items exist before checking length
+        if (!items || items.length === 0) {
+            console.log('Cart is empty');
             emptyCart.style.display = 'block';
             cartContent.style.display = 'none';
         } else {
+            console.log('Cart has', items.length, 'items');
             emptyCart.style.display = 'none';
             cartContent.style.display = 'block';
             renderCart();
@@ -80,6 +94,8 @@ async function loadCart() {
 
 // Render cart items
 function renderCart() {
+    console.log('Rendering cart data:', cartData);
+
     const cartItemsList = document.getElementById('cartItemsList');
     cartItemsList.innerHTML = '';
     
@@ -89,8 +105,8 @@ function renderCart() {
         itemEl.innerHTML = `
             <div class="item-image">📚</div>
             <div class="item-details">
-                <div class="item-title">${item.Title}</div>
-                <div class="item-format">Format ID: ${item.FormatID}</div>
+                <div class="item-title">${item.BookTitle}</div>
+                <div class="item-format">FormatID: ${item.FormatID} | ${item.FormatType}</div>
                 <div class="item-price">${formatPrice(item.Price)}</div>
             </div>
             <div class="item-actions">
@@ -99,7 +115,10 @@ function renderCart() {
                     <input type="number" value="${item.Quantity}" min="1" readonly>
                     <button onclick="updateQuantity(${item.ItemNo}, ${item.Quantity + 1})">+</button>
                 </div>
-                <button class="btn-remove" onclick="removeItem(${item.ItemNo})">🗑️ Xóa</button>
+                <button class="btn-remove" onclick="removeItem(${item.ItemNo})"> 
+                    <i class="bi bi-trash"></i>
+                    Remove
+                </button>
             </div>
         `;
         cartItemsList.appendChild(itemEl);

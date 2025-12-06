@@ -1,18 +1,16 @@
 # routes/auth_routes.py
 
 from flask import Blueprint, request, jsonify
-from routes import auth_bp
-<<<<<<< HEAD
-from db import query_one
-=======
 from db import query_one, query_all
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
+
+auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 # Hashed password
 PASSWORD_HASH = {
     "john123": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K",
     "jane456": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K",
-    "alex789": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K"
+    "alex789": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K",
+    "superadmin": "$2b$12$EixR.k/1tJq9s.Y3aG1xX.Vq8uJ3iC8q/b2E/E.bT3qS.K/e.Z2K",
 }
 
 @auth_bp.post("/login")
@@ -30,11 +28,7 @@ def login():
         return jsonify({"error": "username and password are required"}), 400
 
     acc = query_one(
-<<<<<<< HEAD
-        "SELECT AccountID, Username, PasswordHash, Status "
-=======
         "SELECT AccountID, Username, PasswordHash, Status, AccountType "
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         "FROM Account WHERE Username = %s",
         [username],
     )
@@ -49,8 +43,6 @@ def login():
     if PASSWORD_HASH.get(password) != acc["PasswordHash"]:
         return jsonify({"error": "Invalid credentials"}), 401
 
-<<<<<<< HEAD
-=======
     # Lấy roles của user dựa trên AccountType và AdminRole
     roles = []
     
@@ -88,17 +80,13 @@ def login():
     if not roles:
         roles.append("Customer")
 
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
     # Ở mức assignment, không cần JWT phức tạp. Trả về thông tin cơ bản.
     return jsonify(
         {
             "message": "Login successful",
             "accountID": acc["AccountID"],
             "username": acc["Username"],
-<<<<<<< HEAD
-=======
             "roles": roles,
->>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
         }
     )
 
