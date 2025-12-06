@@ -164,7 +164,7 @@ function displayTopSellingAuthors(authors) {
                     </div>
                     <div class="author-card-body">
                         <div class="author-info">
-                            <span class="info-badge"><i class="bi bi-star-fill me-1"></i>${author.TotalQuantitySold} Books</span>
+                            <span class="info-badge"><i class="bi bi-star-fill me-1"></i>${author.TotalQuantitySold} Sold</span>
                             <span class="info-badge"><i class="bi bi-bookmark-check me-1"></i>${author.NumberOfTitlesSold} Titles</span>
                         </div>
                     </div>

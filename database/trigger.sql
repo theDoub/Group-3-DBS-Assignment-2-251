@@ -10,28 +10,15 @@ DELIMITER //
 -- This part is concerned with OrderItem and CartItem
 -- -------------------------------------------------------
 
--- Function concerned with Price
--- CREATE FUNCTION getPriceByFormatID (p_FormatID VARCHAR(10))
--- RETURNS DECIMAL(10,2)
--- DETERMINISTIC
--- BEGIN
---     DECLARE v_EditionPrice DECIMAL(10,2) DEFAULT 0.00;
-
---     SELECT E.Price
---     INTO v_EditionPrice
---     FROM Edition E
---     JOIN Format F ON E.DitionID = F.EditionID
---     WHERE F.FormatID = p_FormatID;
-
---     RETURN IFNULL(v_EditionPrice, 0.00);
--- END;
-
 -- For STOCK QUANTITY
 CREATE FUNCTION CheckPrintedBookStock(
-    p_FormatID VARCHAR(10),
-    p_Quantity INT
+    p_FormatID VARCHAR(10), -- This is the primary key of PrintedBook, used to identify which PrintedBook we need to check
+    p_Quantity INT -- The quantity requested for a printed book
+
 )
 RETURNS BOOLEAN
+-- True if the requested quantity is satisfied according to the current available stock, 
+-- False if the requested quantity is invalid or above the available stock
 DETERMINISTIC
 BEGIN
     DECLARE v_AvailableQuantity INT;
@@ -59,11 +46,46 @@ BEGIN
     END IF;
 END //
 
+-- -----------------------------------------------------------------
+-- For CartItem: Upsert feature
+-- Call this instead of calling INSERT INTO CartItem
+CREATE PROCEDURE AddOrUpdateCartItem (
+    IN p_CartID INT, -- Cart Identifier
+    IN p_FormatID VARCHAR(10), -- Identify which format customer wants to buy
+    IN p_Quantity INT -- The quantity of the format that customer wants to buy
+)
+BEGIN
+    DECLARE existing_item_no INT;
+    
+    -- 1. Check if the item already exists in the cart
+    SELECT ItemNo INTO existing_item_no
+    FROM CartItem CI
+    JOIN Format F ON CI.FormatID = CI.FormatID
+    WHERE CI.CartID = p_CartID
+      AND CI.FormatID = p_FormatID
+    LIMIT 1;
+
+    -- 2. Handle the result
+    IF existing_item_no IS NOT NULL THEN
+        -- Item exists => Update the quantity
+        UPDATE CartItem
+        SET Quantity = Quantity + p_Quantity
+        WHERE ItemNo = existing_item_no;
+    ELSE
+        -- Item doesn't exist: Insert a new row (which will fire the existing trigger)
+        INSERT INTO CartItem (CartID, FormatID, Quantity) 
+        VALUES (p_CartID, p_FormatID, p_Quantity);
+    END IF;
+END //
+
+
 
 -- For CartITem: unique within each ShoppingCart
 -- This makes CartItem automatically count when we insert into
 -- E.g. If you insert 4 times in the same CartID -> ItemNo automatically counts from 1 -> 4
 -- No need to specify ItemNo when inserting into CartItem (if you do, it is overwrited by this trigger anyway)
+
+
 CREATE TRIGGER trg_CartItem_BeforeInsert
 BEFORE INSERT ON CartItem
 FOR EACH ROW
@@ -299,7 +321,7 @@ END //
 
 -- Format
 -- Well, auto-insert is not that necessary, we should manually insert 
--- (because each subclass has its own NOT NULL attrubutes
+-- (because each subclass has its own NOT NULL attributes)
 
 -- Printed
 CREATE TRIGGER trg_check_specialization_printedbook
@@ -390,6 +412,31 @@ BEGIN
 END //
 
 -- -------------------------------------------------------
+-- DELIVERY LOGIC
+-- -------------------------------------------------------
+CREATE TRIGGER trg_Delivery_BeforeInsert
+BEFORE INSERT ON Delivery
+FOR EACH ROW
+BEGIN
+    DECLARE exists_printed BOOLEAN DEFAULT FALSE;
+
+    -- Check if there exists at least one printed book in this order
+    SELECT EXISTS (
+        SELECT 1
+        FROM OrderItem oi
+        JOIN PrintedBook pb ON oi.FormatID = pb.FormatID
+        WHERE oi.OrderID = NEW.OrderID
+    )
+    INTO exists_printed;
+
+    -- If no printed book found, reject the insert
+    IF NOT exists_printed THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Delivery not allowed: order has no printed books.';
+    END IF;
+END //
+
+-- -------------------------------------------------------
 -- DISCOUNT LOGIC -> discount-logic.sql
 -- -------------------------------------------------------
 
@@ -401,7 +448,6 @@ END //
 -- -------------------------------------------------------
 -- REVIEW LOGIC
 -- -------------------------------------------------------
--- Not Testing yet
 CREATE TRIGGER trg_Review_BeforeInsert
 BEFORE INSERT ON Review
 FOR EACH ROW
