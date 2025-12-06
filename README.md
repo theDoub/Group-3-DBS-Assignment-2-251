@@ -1,35 +1,3 @@
-# Book4U - Online Bookstore Management System
-
-Book4U is a full-stack web application designed for an online bookstore. This project demonstrates advanced database system concepts by implementing complex business logic (pricing, inventory checks, discount calculations) directly within the Database layer using Stored Procedures, Triggers, and Functions, coupled with a Python Flask backend and a modern Frontend interface.
-
-## 🚀 Key Features
-
-* **User Authentication:** Secure login for customers and administrators.
-* **Product Management:**
-    * Browse books with multiple editions and formats (Printed, E-book, Audio).
-    * **Edition & Format System:** Books can have multiple editions with language variants.
-    * **Format-specific Pricing:** Distinct prices displayed for each book format.
-    * Real-time stock checking.
-    * **Admin Controls:** Create, edit, and delete books with editions and formats.
-* **Author & Publisher Management:**
-    * View author profiles and top-selling authors.
-    * Manage publishers with contact information.
-    * **Admin Controls:** Create, edit, and delete authors and publishers.
-* **Shopping Cart:**
-    * Add/Remove items.
-    * Adjust quantities dynamically.
-    * Auto-clear cart upon successful checkout.
-* **Order Management:**
-    * Create new orders with automatic total calculation.
-    * **Order Lifecycle:** View order history and update status (Pay Now / Cancel) for pending orders.
-    * View detailed order items and applied discounts.
-    * **Remove Applied Discounts:** Select and remove specific discounts from orders.
-* **Smart Voucher System:**
-    * **Intelligent Recommendation:** Automatically suggests the best deal based on the order total.
-    * **Condition Checking:** Validates voucher constraints (e.g., "Orders over $50").
-    * **Limit Enforcement:** Prevents overuse of restricted vouchers (e.g., Black Friday deals).
-    * **Admin Discount Management:** Apply and remove discounts from orders.
-
 ## 🛠️ Tech Stack
 
 * **Database:** MySQL (Triggers, Stored Procedures, Functions, Transactions).
@@ -172,37 +140,3 @@ Book4U/
 │       └── ...
 └── README.md
 ```
-## 🎨 UI/UX Features
-
-* **Responsive Design:** Works seamlessly on desktop, tablet, and mobile.
-* **Modal Dialogs:** Admin controls for create/edit/delete operations.
-* **Alert System:** SweetAlert2 for user-friendly notifications.
-* **Dynamic Tables:** Real-time updates without page reload.
-* **Gradient Headers:** Modern visual design with CSS gradients.
-* **Icon Integration:** Bootstrap Icons for enhanced visual communication.
-
-## 📝 Notes
-
-* All IDs (BookID, AuthorID, OrderID) are auto-generated via database triggers.
-* Discounts are intelligently applied based on order total and conditions.
-* Cart is automatically cleared after successful checkout.
-* Only Super Admin role can access management features.
-* Database operations use transactions for data consistency.
-
-## ✅ Testing Checklist
-
-- [ ] Login with customer account
-- [ ] Browse books by category
-- [ ] View top-selling authors
-- [ ] Add items to cart
-- [ ] Apply discount/voucher
-- [ ] Remove discount from order
-- [ ] Checkout and clear cart
-- [ ] Login as admin
-- [ ] Create/edit/delete book
-- [ ] Create/edit/delete author
-- [ ] Create/edit/delete publisher
-
-## 📧 Support
-
-For issues or questions, please refer to the inline code comments or check the database stored procedures documentation.
