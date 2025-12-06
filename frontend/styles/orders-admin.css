@@ -1,0 +1,431 @@
+:root {
+    --primary: #0d5dfd;
+    --primary-gradient: #e12e8a;
+    --primary-soft: rgba(13,110,253,0.35);
+    --accent: #df4407;
+    --bg-soft: #efe3e9;
+    --dark-text: #1a202c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fa;
+}
+
+/* NAVBAR */
+.navbar {
+    backdrop-filter: blur(12px);
+    background: linear-gradient(225deg, var(--primary) 50%, var(--primary-gradient) 100%) !important;
+    background-attachment: fixed;
+}
+
+.navbar-brand {
+    letter-spacing: .5px;
+}
+
+/* NAV BAR LINK */
+.nav-tabs {
+    border-bottom: 2px solid #e8e8e8;
+}
+
+.nav-tabs .nav-link {
+    color: var(--dark-text);
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.nav-tabs .nav-link.active {
+    color: white;
+    background: linear-gradient(125deg, var(--primary) 50%, var(--primary-gradient) 100%);
+    border: none;
+    border-bottom: 3px solid var(--primary);
+}
+
+/* HERO */
+.hero-banner {
+    background: linear-gradient(125deg, var(--primary), var(--primary-gradient));
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-badge {
+    background: rgba(255,255,255,.12);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: .8rem;
+}
+
+.hero-banner::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(255,255,255,.5), transparent 70%);
+    top: -80px;
+    right: -40px;
+    opacity: .7;
+}
+
+.hero-cta-btn {
+    border-radius: 999px;
+    padding-inline: 18px;
+    box-shadow: 0 8px 16px rgba(0,0,0,.18);
+}
+
+.hero-stats {
+    font-size: .9rem;
+    opacity: .9;
+}
+
+/* Filter Section */
+.form-label {
+    color: var(--dark-text);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+}
+
+.form-select,
+.form-control {
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--dark-text);
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+    outline: none;
+}
+
+/* Order Cards */
+.order-admin-card {
+    background: white;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.order-admin-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    transform: translateY(-4px);
+}
+
+.order-admin-card .card-body {
+    padding: 1.75rem;
+}
+
+.order-admin-card .card-title {
+    font-size: 1.3rem;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.order-admin-card .card-text {
+    font-size: 0.9rem;
+}
+
+/* Status Badges */
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    font-weight: 600;
+}
+
+.status-confirmed {
+    background: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #198754;
+    font-weight: 600;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn-view-details {
+    background: linear-gradient(125deg, var(--primary) 50%, var(--primary-gradient) 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view-details:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--primary-soft);
+    color: white;
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* Modal */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    background: linear-gradient(125deg, var(--primary) 50%, var(--primary-gradient) 100%);
+    color: white;
+    border: none;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header .modal-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e8e8e8;
+    padding: 1.5rem;
+}
+
+/* Table */
+.table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead {
+    background: linear-gradient(125deg, var(--primary) 50%, var(--primary-gradient) 100%);
+    color: white;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    padding: 1rem;
+    border-bottom: 1px solid #e8e8e8;
+    color: var(--dark-text);
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.bg-info {
+    background: var(--primary) !important;
+}
+
+.bg-warning {
+    background: var(--accent) !important;
+    color: white !important;
+}
+
+.bg-success {
+    background: #198754 !important;
+}
+
+.bg-danger {
+    background: #dc3545 !important;
+}
+
+.bg-secondary {
+    background: #6c757d !important;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--primary-soft);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* Loading Spinner */
+.spinner-border {
+    color: var(--primary);
+}
+
+/* Customer Info Section */
+.customer-info {
+    margin-bottom: 1.5rem;
+}
+
+.customer-info p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    color: var(--dark-text);
+}
+
+/* Order Summary */
+.order-summary {
+    background: var(--primary-soft);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary);
+}
+
+.order-summary h6 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.order-summary p {
+    margin: 0.5rem 0;
+    color: var(--dark-text);
+}
+
+.total-amount {
+    font-size: 1.8rem;
+    color: var(--accent);
+    font-weight: 800;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .admin-header {
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .admin-header .container-lg > div {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .admin-header .d-flex {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .order-admin-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .order-admin-card .card-title {
+        font-size: 1.1rem;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .admin-header {
+        padding: 0.75rem 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+    }
+
+    .order-admin-card .card-body {
+        padding: 1rem;
+    }
+
+    .table {
+        font-size: 0.75rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+    }
+}

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Management - Book4U Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles/index.css">
+    <style>
+        .review-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 4px 12px rgba(13,110,253,0.15);
+            border-color: var(--primary);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(125deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .rating-stars {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+
+        .review-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .filter-section {
+            background: linear-gradient(125deg, rgba(13,110,253,0.05) 0%, rgba(225,46,138,0.05) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px solid rgba(13,110,253,0.2);
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stats-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-3 sticky-top" style="background-color: var(--primary);">
+        <div class="container py-1">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+                <i class="bi bi-book-half me-2 fs-4"></i>
+                <span>Book4U</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="bi bi-house me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="categories.html"><i class="bi bi-list-check me-1"></i>Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="authors.html"><i class="bi bi-person-lines-fill me-1"></i>Authors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="publishers.html"><i class="bi bi-buildings me-1"></i>Publishers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="orders.html"><i class="bi bi-receipt me-1"></i>Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="reviews-admin.html"><i class="bi bi-star me-1"></i>Reviews</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        <div class="mb-4">
+            <h1 class="fw-bold" style="color: var(--primary);">
+                <i class="bi bi-star-fill me-2"></i>Review Management
+            </h1>
+            <p class="text-muted">Monitor and manage customer reviews</p>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="row g-3 mb-4" id="statsSection">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalReviews">0</div>
+                    <div class="stats-label">Total Reviews</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="avgRating">0.0</div>
+                    <div class="stats-label">Average Rating</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalBooks">0</div>
+                    <div class="stats-label">Books Reviewed</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalCustomers">0</div>
+                    <div class="stats-label">Customers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filter by Rating</label>
+                    <select id="filterRating" class="form-select" onchange="loadReviews()">
+                        <option value="">All Ratings</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 stars)</option>
+                        <option value="3">⭐⭐⭐ (3 stars)</option>
+                        <option value="2">⭐⭐ (2 stars)</option>
+                        <option value="1">⭐ (1 star)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Search by Book or Customer</label>
+                    <input type="text" id="searchQuery" class="form-control" placeholder="Type to search..." oninput="loadReviews()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Sort By</label>
+                    <select id="sortBy" class="form-select" onchange="loadReviews()">
+                        <option value="date_desc">Newest First</option>
+                        <option value="date_asc">Oldest First</option>
+                        <option value="rating_desc">Highest Rating</option>
+                        <option value="rating_asc">Lowest Rating</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="loadReviews()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Reviews List -->
+        <div id="reviewsList" style="display: none;">
+            <!-- Reviews will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+            <p class="text-muted mt-3">No reviews found</p>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script>
+        const user = JSON.parse(localStorage.getItem("user"));
+        
+        // Check if user is admin
+        if (!user || !user.roles || !user.roles.includes("Super Admin")) {
+            window.location.href = "index.html";
+        }
+
+        let allReviews = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadReviews();
+        });
+
+        function loadReviews() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const reviewsList = document.getElementById('reviewsList');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingSpinner.style.display = 'block';
+            reviewsList.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            // Fetch all reviews using the new admin endpoint
+            fetch('http://127.0.0.1:5000/api/reviews/all')
+                .then(res => res.json())
+                .then(reviews => {
+                    allReviews = reviews;
+                    displayReviews();
+                    updateStats();
+                })
+                .catch(err => {
+                    console.error('Error loading reviews:', err);
+                    loadingSpinner.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    Swal.fire('Error', 'Failed to load reviews', 'error');
+                });
+        }
+
+        function displayReviews() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const reviewsList = document.getElementById('reviewsList');
+            const emptyState = document.getElementById('emptyState');
+
+            // Apply filters
+            let filtered = [...allReviews];
+
+            const ratingFilter = document.getElementById('filterRating').value;
+            if (ratingFilter) {
+                filtered = filtered.filter(r => r.Rating === parseInt(ratingFilter));
+            }
+
+            const searchQuery = document.getElementById('searchQuery').value.toLowerCase();
+            if (searchQuery) {
+                filtered = filtered.filter(r => 
+                    r.BookTitle.toLowerCase().includes(searchQuery) ||
+                    r.CustomerName.toLowerCase().includes(searchQuery)
+                );
+            }
+
+            // Apply sorting
+            const sortBy = document.getElementById('sortBy').value;
+            filtered.sort((a, b) => {
+                switch(sortBy) {
+                    case 'date_desc':
+                        return new Date(b.ReviewDate) - new Date(a.ReviewDate);
+                    case 'date_asc':
+                        return new Date(a.ReviewDate) - new Date(b.ReviewDate);
+                    case 'rating_desc':
+                        return b.Rating - a.Rating;
+                    case 'rating_asc':
+                        return a.Rating - b.Rating;
+                    default:
+                        return 0;
+                }
+            });
+
+            loadingSpinner.style.display = 'none';
+
+            if (filtered.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            reviewsList.innerHTML = filtered.map(review => {
+                const initials = review.CustomerName.split(' ').map(n => n.charAt(0)).join('').toUpperCase();
+                const stars = '⭐'.repeat(review.Rating);
+                const date = new Date(review.ReviewDate).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+
+                return `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">${initials}</div>
+                                <div>
+                                    <h5 class="mb-0 fw-bold">${review.CustomerName}</h5>
+                                    <div class="rating-stars">${stars}</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">${date}</small>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong style="color: var(--primary);">
+                                <i class="bi bi-book me-1"></i>${review.BookTitle}
+                            </strong>
+                        </div>
+                        
+                        ${review.Comment ? `
+                            <div class="p-3 bg-light rounded mb-2">
+                                <i class="bi bi-quote text-muted"></i>
+                                <span class="ms-2">${review.Comment}</span>
+                            </div>
+                        ` : '<div class="text-muted small">No comment provided</div>'}
+                        
+                        <div class="review-meta">
+                            <div class="meta-item">
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <span>Rating: ${review.Rating}/5</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="bi bi-receipt"></i>
+                                <span>Order: ${review.OrderID}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="bi bi-hash"></i>
+                                <span>Review #${review.ReviewID}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            reviewsList.style.display = 'block';
+        }
+
+        function updateStats() {
+            const totalReviews = allReviews.length;
+            const avgRating = totalReviews > 0 
+                ? (allReviews.reduce((sum, r) => sum + r.Rating, 0) / totalReviews).toFixed(1)
+                : '0.0';
+            
+            const uniqueBooks = new Set(allReviews.map(r => r.BookID)).size;
+            const uniqueCustomers = new Set(allReviews.map(r => r.CustomerName)).size;
+
+            document.getElementById('totalReviews').textContent = totalReviews;
+            document.getElementById('avgRating').textContent = avgRating;
+            document.getElementById('totalBooks').textContent = uniqueBooks;
+            document.getElementById('totalCustomers').textContent = uniqueCustomers;
+        }
+    </script>
+</body>
+</html>

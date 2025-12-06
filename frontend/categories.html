@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - Book4U</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles/index.css">
+    <style>
+        .category-card {
+            background: linear-gradient(125deg, rgba(13,110,253,0.05) 0%, rgba(225,46,138,0.05) 100%);
+            border: 2px solid rgba(13,110,253,0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+
+        .category-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(13,110,253,0.2);
+            border-color: var(--primary);
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .category-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .category-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            min-height: 50px;
+        }
+
+        .category-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(13,110,253,0.1);
+        }
+
+        .book-count {
+            display: inline-block;
+            background: rgba(13,110,253,0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .subcategory-badge {
+            display: inline-block;
+            background: rgba(32,201,151,0.2);
+            color: #198754;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .detail-header {
+            background: linear-gradient(125deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+        }
+
+        .detail-header h1 {
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .detail-header p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(13,110,253,0.1);
+            color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+        }
+
+        .subcategories-grid {
+            margin-top: 2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-3 sticky-top" style="background-color: var(--primary);">
+        <div class="container py-1">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+                <i class="bi bi-book-half me-2 fs-4"></i>
+                <span>Book4U</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="bi bi-house me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="categories.html"><i class="bi bi-list-check me-1"></i>Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="authors.html"><i class="bi bi-person-lines-fill me-1"></i>Authors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="publishers.html"><i class="bi bi-buildings me-1"></i>Publishers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="orders.html"><i class="bi bi-receipt me-1"></i>Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cart.html"><i class="bi bi-cart-fill me-1"></i>Cart</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-5">
+        <!-- Categories List View -->
+        <div id="categoriesListView">
+            <h1 class="mb-4 fw-bold" style="color: var(--primary);">
+                <i class="bi bi-list-check me-2"></i>Book Categories
+            </h1>
+            
+            <div id="loadingSpinner" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div class="row g-4" id="categoriesContainer" style="display: none;">
+                <!-- Categories will be loaded here -->
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="bi bi-inbox"></i>
+                <p>No categories found</p>
+            </div>
+        </div>
+
+        <!-- Category Details View -->
+        <div id="categoryDetailView" style="display: none;">
+            <button class="back-button" onclick="goBackToCategoriesList()">
+                <i class="bi bi-arrow-left"></i> Back to Categories
+            </button>
+
+            <div id="categoryDetailContent"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-5 py-4" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6;">
+        <div class="container text-center text-muted">
+            <p>&copy; 2024 Book4U. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script>
+        let allCategories = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+        });
+
+        function loadCategories() {
+            console.log("[loadCategories] Fetching all categories");
+            
+            fetch("http://127.0.0.1:5000/api/categories")
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Categories data:", data);
+                    allCategories = data;
+                    displayCategories(data);
+                })
+                .catch(err => {
+                    console.error('Error loading categories:', err);
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('emptyState').innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i><p>Failed to load categories</p>';
+                });
+        }
+
+        function displayCategories(categories) {
+            const container = document.getElementById('categoriesContainer');
+            const spinner = document.getElementById('loadingSpinner');
+            const emptyState = document.getElementById('emptyState');
+
+            spinner.style.display = 'none';
+
+            if (!categories || categories.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            container.innerHTML = categories.map(category => {
+                const icons = {
+                    'Literature': 'bi-book',
+                    'Science Fiction': 'bi-rocket',
+                    'Business': 'bi-briefcase',
+                    'Self-Help': 'bi-hand-thumbs-up',
+                    'Personal Finance': 'bi-cash-coin',
+                    'Fantasy': 'bi-magic'
+                };
+                const icon = icons[category.CategoryName] || 'bi-list';
+
+                return `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="category-card" onclick="viewCategoryDetails(${category.CategoryID})">
+                            <div class="category-icon">
+                                <i class="bi ${icon}"></i>
+                            </div>
+                            <div class="category-name">${category.CategoryName}</div>
+                            <div class="category-description">${category.Description || 'No description available'}</div>
+                            <div class="category-meta">
+                                <span class="book-count">
+                                    <i class="bi bi-book me-1"></i>${category.BookCount} ${category.BookCount === 1 ? 'Book' : 'Books'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.style.display = 'flex';
+            container.classList.add('row');
+        }
+
+        function viewCategoryDetails(categoryId) {
+            console.log("[viewCategoryDetails] Fetching details for category", categoryId);
+            
+            fetch(`http://127.0.0.1:5000/api/categories/${categoryId}/details`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Category details:", data);
+                    displayCategoryDetails(data);
+                })
+                .catch(err => {
+                    console.error('Error loading category details:', err);
+                    Swal.fire('Error', 'Failed to load category details', 'error');
+                });
+        }
+
+        function displayCategoryDetails(category) {
+            const listView = document.getElementById('categoriesListView');
+            const detailView = document.getElementById('categoryDetailView');
+            const content = document.getElementById('categoryDetailContent');
+
+            const icons = {
+                'Literature': 'bi-book',
+                'Science Fiction': 'bi-rocket',
+                'Business': 'bi-briefcase',
+                'Self-Help': 'bi-hand-thumbs-up',
+                'Personal Finance': 'bi-cash-coin',
+                'Fantasy': 'bi-magic'
+            };
+            const icon = icons[category.Name] || 'bi-list';
+
+            let html = `
+                <div class="detail-header">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="font-size: 3.5rem;">
+                            <i class="bi ${icon}"></i>
+                        </div>
+                        <div>
+                            <h1>${category.Name}</h1>
+                            <p>${category.Description || 'No description available'}</p>
+                        </div>
+                    </div>
+                    <div class="detail-meta">
+                        <div class="meta-item">
+                            <i class="bi bi-book" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small>Total Books</small>
+                                <div class="meta-value">${category.BookCount}</div>
+                            </div>
+                        </div>
+                        ${category.SubCategories && category.SubCategories.length > 0 ? `
+                        <div class="meta-item">
+                            <i class="bi bi-collection" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small>Subcategories</small>
+                                <div class="meta-value">${category.SubCategories.length}</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Show subcategories if available
+            if (category.SubCategories && category.SubCategories.length > 0) {
+                html += `
+                    <div class="subcategories-grid">
+                        <h3 class="mb-4" style="color: var(--primary);">
+                            <i class="bi bi-collection me-2"></i>Subcategories
+                        </h3>
+                        <div class="row g-3">
+                            ${category.SubCategories.map(sub => `
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="category-card" onclick="viewCategoryDetails(${sub.CategoryID})">
+                                        <div class="category-name">${sub.Name}</div>
+                                        <div class="category-description">${sub.Description || 'No description available'}</div>
+                                        <div class="category-meta">
+                                            <span class="book-count">
+                                                <i class="bi bi-book me-1"></i>${sub.BookCount} ${sub.BookCount === 1 ? 'Book' : 'Books'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+            listView.style.display = 'none';
+            detailView.style.display = 'block';
+        }
+
+        function goBackToCategoriesList() {
+            document.getElementById('categoriesListView').style.display = 'block';
+            document.getElementById('categoryDetailView').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

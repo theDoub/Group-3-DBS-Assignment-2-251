@@ -1,0 +1,81 @@
+<<<<<<< HEAD
+# Bỏ qua thư mục môi trường ảo
+venv/
+env/
+.env
+
+# Bỏ qua các file rác của Python (compiled files)
+__pycache__/
+*.pyc
+*.pyo
+
+# Bỏ qua cài đặt của VS Code
+.vscode/
+
+# Bỏ qua file hệ thống
+.DS_Store
+Thumbs.db
+=======
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# MySQL
+*.sql~
+>>>>>>> 9b5acd6ab9fa3af5b6ff8329ba9b5886043d043e
