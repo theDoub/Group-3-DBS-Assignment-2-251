@@ -63,9 +63,11 @@ See more accounts in `backend/routes/auth_routes.py`
 ### Step 2: Customer Features
 As a **customer**, you can:
 - Browse and search for books by category
-- View top-selling authors
+- **Note:** If you click a category with subcategories, you have to click more onto one of the subcategory to see fileter book
+- View authors and top-selling authors
+- View publishers
 - Add items to cart
-- Apply vouchers/discounts
+- Apply many discounts for each order item
 - Checkout and place orders
 - View order history and details
 - Remove applied discounts from orders
@@ -77,12 +79,12 @@ As an **admin**, you can:
 - **Payment Management:** View all pending payments and accept/confirm customer payments
 - **Order Management:** View and manage all customer orders
 - **Delivery Management:** Auto-generate deliveries for printed books and update delivery status
-- **Discount Management:** Apply and remove discounts from orders
 
 ### Currently Not Implemented
-- Viewing all customer carts
-- Creating/Editing/Deleting categories and subcategories
-
+- Viewing all customer carts for admin -> Do this just like orders-admin.html
+- Creating/Editing/Deleting categories and subcategories for admin -> Just need to add more routes handling in admin_routes.py and index.html
+- When creating/editing/deleting Book for admin, there's no AuthorID input -> Just need to add more input in Create/Edit/Delete Book
+- Some files are still too large, too messy, hard to read
 
 ## 🔐 Demo Accounts
 
