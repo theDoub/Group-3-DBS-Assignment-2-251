@@ -522,6 +522,129 @@ def update_order_status(order_id):
 
 
 
+@order_bp.post("/reviews")
+def create_review():
+    """Create a book review for a confirmed order item."""
+    data = request.get_json()
+    
+    book_id = data.get('BookID')
+    order_id = data.get('OrderID')
+    order_no = data.get('OrderNo')
+    rating = data.get('Rating')
+    comment = data.get('Comment')
+    account_id = data.get('AccountID')
 
-# --- ADMIN ENDPOINTS FOR PAYMENTS AND DELIVERIES ---
+    print(f"[create_review] Received review data: BookID={book_id}, OrderID={order_id}, OrderNo={order_no}, Rating={rating}, AccountID={account_id}")
+    
+    if not all([book_id, order_id, rating, comment, account_id]):
+        print("[create_review] Missing required fields")
+        return jsonify({"error": "All fields required"}), 400
+    
+    try:
+        rating_int = int(rating)
+        if not (1 <= rating_int <= 5):
+            print("[create_review] Rating out of valid range")
+            return jsonify({"error": "Rating must be between 1 and 5"}), 400
+    except ValueError:
+        return jsonify({"error": "Invalid rating value"}), 400
+    
+    
+    if len(comment.strip()) < 10:
+        return jsonify({"error": "Review comment must be at least 10 characters"}), 400
+    
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        
+        # Insert review
+        insert_sql = """
+        INSERT INTO Review (OrderID, OrderNo, Rating, Comment, ReviewDate)
+        VALUES (%s, %s, %s, %s, NOW())
+        """
+        cursor.execute(insert_sql, [
+            order_id, order_no, 
+            rating_int, comment.strip()
+        ])
+        conn.commit()
+        cursor.close()
+        
+        print(f"[create_review] Review created for Book {book_id}, Order {order_id}, Item {order_no}")
+        return jsonify({"message": "Review submitted successfully"}), 201
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[create_review] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
 
+@order_bp.get("/reviews")
+def get_user_reviews():
+    """Get all reviews submitted by a user."""
+    account_id = request.args.get('accountId')
+    
+    if not account_id:
+        return jsonify({"error": "accountId required"}), 400
+    
+    print(f"[get_user_reviews] Fetching reviews for AccountID {account_id}")
+    
+    conn = get_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        sql = """
+        SELECT r.ReviewID, r.OrderNo, r.OrderID, r.Rating, r.Comment, r.ReviewDate
+        FROM Review r
+        JOIN `Order` o ON r.OrderID = o.OrderID
+        JOIN CustomerAccount ca ON o.AccountID = ca.AccountID
+        WHERE ca.AccountID = %s
+        ORDER BY r.ReviewDate DESC
+        """
+        cursor.execute(sql, [account_id])
+        reviews = cursor.fetchall()
+        cursor.close()
+        
+        print(f"[get_user_reviews] Retrieved {len(reviews)} reviews for account {account_id}")
+        return jsonify(reviews), 200
+    except Exception as e:
+        print(f"[get_user_reviews] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+
+
+@order_bp.delete("/reviews/<int:review_id>")
+def delete_review(review_id):
+    """Delete a review submitted by user."""
+    data = request.get_json() or {}
+    account_id = data.get('AccountID')
+    
+    if not account_id:
+        return jsonify({"error": "AccountID required"}), 400
+    
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        
+        # Verify review belongs to user
+        cursor.execute(
+            "SELECT ReviewID FROM Review WHERE ReviewID = %s",
+            [review_id]
+        )
+        if not cursor.fetchone():
+            return jsonify({"error": "Review not found or access denied"}), 404
+        
+        # Delete review
+        cursor.execute("DELETE FROM Review WHERE ReviewID = %s", [review_id])
+        conn.commit()
+        cursor.close()
+        
+        print(f"[delete_review] Review {review_id} deleted")
+        return jsonify({"message": "Review deleted successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"[delete_review] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()

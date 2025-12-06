@@ -457,3 +457,100 @@ function confirmRemoveDiscount(orderNo, discountId) {
         Swal.fire('Error', 'Failed to remove discount', 'error');
     });
 }
+
+
+
+
+// ========== REVIEW FUNCTIONS ==========
+let currentReviewRating = 0;
+
+function openReviewModal(bookId, bookTitle, orderId) {
+    document.getElementById('reviewBookId').value = bookId;
+    document.getElementById('reviewOrderId').value = orderId;
+    document.getElementById('reviewBookTitle').value = bookTitle;
+    document.getElementById('reviewTitle').value = '';
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('reviewRating').value = 0;
+    currentReviewRating = 0;
+    
+    // Reset stars
+    document.querySelectorAll('.star').forEach(star => {
+        star.style.color = '#ddd';
+    });
+    
+    new bootstrap.Modal(document.getElementById('reviewModal')).show();
+}
+
+// Star rating click handler
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            currentReviewRating = this.dataset.rating;
+            document.getElementById('reviewRating').value = currentReviewRating;
+            
+            // Highlight stars up to clicked rating
+            stars.forEach(s => {
+                s.style.color = s.dataset.rating <= currentReviewRating ? 'var(--primary)' : '#ddd';
+            });
+        });
+        
+        // Hover effect
+        star.addEventListener('mouseover', function() {
+            stars.forEach(s => {
+                s.style.color = s.dataset.rating <= this.dataset.rating ? 'var(--primary)' : '#ddd';
+            });
+        });
+    });
+    
+    // Reset on mouse leave
+    document.querySelector('.rating-stars').addEventListener('mouseleave', function() {
+        stars.forEach(s => {
+            s.style.color = s.dataset.rating <= currentReviewRating ? 'var(--primary)' : '#ddd';
+        });
+    });
+});
+
+function submitReview() {
+    const rating = document.getElementById('reviewRating').value;
+    const title = document.getElementById('reviewTitle').value.trim();
+    const comment = document.getElementById('reviewComment').value.trim();
+    const bookId = document.getElementById('reviewBookId').value;
+    const orderId = document.getElementById('reviewOrderId').value;
+    
+    if (!rating) {
+        Swal.fire('Error', 'Please select a rating', 'error');
+        return;
+    }
+    if (!title) {
+        Swal.fire('Error', 'Review title is required', 'error');
+        return;
+    }
+    if (!comment) {
+        Swal.fire('Error', 'Review comment is required', 'error');
+        return;
+    }
+    
+    fetch('http://127.0.0.1:5000/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            BookID: bookId,
+            OrderID: orderId,
+            Rating: parseInt(rating),
+            Title: title,
+            Comment: comment,
+            AccountID: accountID
+        })
+    })
+        .then(r => r.json())
+        .then(data => {
+            Swal.fire('Success', 'Review submitted successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+            loadOrderItems(currentOrderId, 'Confirmed');
+        })
+        .catch(e => {
+            console.error('Error:', e);
+            Swal.fire('Error', 'Failed to submit review', 'error');
+        });
+}
