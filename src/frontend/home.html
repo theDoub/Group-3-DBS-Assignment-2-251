@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Book4U</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/home.css">
+</head>
+<body>
+    <div class="welcome-container">
+        <!-- Background Bookshelf Image -->
+        <div class="background-image-container">
+            <img src="images/bookshelf.jpg" alt="Beautiful bookshelf" class="background-bookshelf">
+            <div class="background-overlay"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-wrapper">
+            <div class="welcome-grid">
+                <!-- Left Side - Text Content -->
+                <div class="welcome-text-section">
+                    <!-- Logo Section -->
+                    <div class="logo-section" onclick="navigateToShop()" style="cursor: pointer;">
+                        <div class="logo-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h1 class="brand-name">Book4U</h1>
+                    </div>
+
+                    <!-- Welcome Message -->
+                    <div class="welcome-message">
+                        <h2 class="greeting">Welcome Back, <span id="userName">Reader</span>!</h2>
+                        <p class="tagline">Discover Your Next Great Read</p>
+                    </div>
+
+                    <!-- Features Grid -->
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <h3>10,000+ Books</h3>
+                            <p>Vast collection across all genres</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-truck-fast"></i>
+                            </div>
+                            <h3>Fast Delivery</h3>
+                            <p>Get your books delivered quickly</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <h3>Top Rated</h3>
+                            <p>Curated bestsellers & reviews</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-percent"></i>
+                            </div>
+                            <h3>Great Deals</h3>
+                            <p>Amazing discounts & offers</p>
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <div class="cta-section">
+                        <button class="shop-now-btn" onclick="navigateToShop()">
+                            <span>Shop Now</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <p class="cta-subtitle">Start exploring our collection today</p>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="stats-section">
+                        <div class="stat-item">
+                            <div class="stat-number">10K+</div>
+                            <div class="stat-label">Books</div>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Authors</div>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <div class="stat-number">50K+</div>
+                            <div class="stat-label">Happy Readers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side - Image Removed (now background) -->
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/home.js"></script>
+</body>
+</html>

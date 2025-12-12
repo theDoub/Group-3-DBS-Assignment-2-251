@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Orders - Book4U</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/orders.css">
+</head>
+<body>
+
+<!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-3 sticky-top" style="background-color: var(--primary);">
+    <div class="container py-1">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+            <i class="bi bi-book-half me-2 fs-4"></i>
+            <span>Book4U</span>
+        </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="bi bi-house me-1"></i>Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                            <a class="nav-link" href="categories.html"><i class="bi bi-list-check me-1"></i>Categories</a>
+                    </li>
+
+                    <li class="nav-item">
+                            <a class="nav-link" href="authors.html"><i class="bi bi-person-lines-fill me-1"></i>Authors</a>
+                    </li>
+
+                    <li class="nav-item">
+                            <a class="nav-link" href="publishers.html"><i class="bi bi-buildings me-1"></i>Publishers</a>
+                    </li>
+
+                    <li class="nav-item">
+                            <a class="nav-link active" href="orders.html"><i class="bi bi-receipt me-1"></i>Orders</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                            <a class="nav-link" href="cart.html"><i class="bi bi-cart-fill me-1"></i> Cart</a>
+                    </li>
+
+                    <li class="nav-item">
+                            <a class="nav-link" href="review.html"><i class="bi bi-star-fill me-1"></i> Reviews</a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <span class="nav-link active" id="welcomeUser"></span>
+                    </li>
+
+                    <li class="nav-item">
+                        <button onclick="logout()" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i>Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<div class="container" style="max-width: 1100px;">
+    <!-- HERO SECTION -->
+        <section class="hero-banner rounded-4 p-4 mb-4 shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+            <div class="position-relative" style="z-index:1;">
+                <h2 class="fw-bold mb-2">
+                    <i class="bi bi-list-check me-2"></i>My Order History
+                </h2>
+                <p class="mb-3 hero-stats">
+                    Review your past orders and manage your purchases all in one place.
+                </p>
+            </div>
+        </section>
+    <div id="ordersListSection">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            
+            <button class="btn btn-outline-primary btn-sm" onclick="loadOrdersList()"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+        </div>
+        <div id="ordersContainer" class="row g-4"></div>
+    </div>
+
+    <div id="orderDetailsSection" style="display: none;">
+        <!-- <button class="btn btn-outline-primary mb-4" onclick="backToOrders()"><i class="bi bi-arrow-left me-1"></i>My Order History</button> -->
+        
+        <div class="card shadow-lg border-0 mb-4 overflow-hidden">
+            <div class="card-header p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="opacity-75 small">ORDER ID</span>
+                        <h5 class="mb-0 fw-bold">#<span id="d_orderId"></span></h5>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block"><i class="bi bi-calendar3 me-1"></i>Order Date</small>
+                        <strong id="d_date" class="fs-6 text-dark"></strong>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted d-block"><i class="bi bi-cash-coin me-1"></i>Total Amount</small>
+                        <span class="fs-3 fw-bold" style="color: var(--accent);">$<span id="d_total"></span></span>
+                    </div>
+                </div>
+
+                <!-- Delivery Address Section -->
+                <div id="deliveryAddressSection" style="display: none;" class="delivery-section p-3 mb-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; min-width: 44px;background:var(--primary) !important;">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-semibold" style="color: var(--primary);"> Delivery Address</h6>
+                            <p id="deliveryAddress" class="mb-0 text-dark"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mb-3 border-bottom pb-2" style="color: var(--primary);"><i class="bi bi-box-seam me-2"></i>Order Items</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th><i class="bi bi-book me-1"></i>Book Title</th>
+                                <th><i class="bi bi-tag me-1"></i>Format</th>
+                                <th class="text-center"><i class="bi bi-box me-1"></i>Qty</th>
+                                <th><i class="bi bi-tag-fill me-1"></i>Unit Price</th>
+                                <th><i class="bi bi-calculator me-1"></i>Subtotal</th>
+                                <th><i class="bi bi-percent me-1"></i>Discount</th>
+                                <th><i class="bi bi-ticket-perforated me-1"></i>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTable"></tbody>
+                    </table>
+                </div>
+
+                <div id="orderActions" class="mt-4 pt-3 border-top text-end d-flex justify-content-end gap-2"></div>
+
+                <span id="d_status" class="badge fs-5 px-5 py-3 rounded-pill"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="discountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-ticket-perforated me-2"></i>Apply Voucher</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Select a voucher to apply for this item:</p>
+                <div id="discountList" class="d-flex flex-column gap-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(125deg, var(--primary) 0%, var(--accent) 100%); color: white;">
+                <h5 class="modal-title"><i class="bi bi-star me-2"></i>Write a Review</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reviewItemInfo" class="mb-3 p-3" style="background: #f8f9fa; border-radius: 8px;">
+                    <!-- Item info will be inserted here -->
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Rating *</label>
+                    <div id="starRating" class="d-flex gap-2 fs-3" style="cursor: pointer;">
+                        <i class="bi bi-star" data-rating="1"></i>
+                        <i class="bi bi-star" data-rating="2"></i>
+                        <i class="bi bi-star" data-rating="3"></i>
+                        <i class="bi bi-star" data-rating="4"></i>
+                        <i class="bi bi-star" data-rating="5"></i>
+                    </div>
+                    <small class="text-muted">Click to rate (1-5 stars)</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Your Review</label>
+                    <textarea id="reviewComment" class="form-control" rows="4" placeholder="Share your thoughts about this book..."></textarea>
+                    <small class="text-muted">Optional - Tell others what you think</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReview()">
+                    <i class="bi bi-send me-1"></i>Submit Review
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Footer -->
+<footer class="footer-section mt-5 py-5" style="background: linear-gradient(135deg, var(--primary), var(--primary-gradient)); color: white;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-book-half me-2"></i>Book4U
+                </h5>
+                <p class="mb-3" style="opacity: 0.9;">Your trusted online bookstore with thousands of titles across all genres. Discover, read, and enjoy!</p>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-light btn-sm rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="#" class="btn btn-light btn-sm rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-twitter"></i>
+                    </a>
+                    <a href="#" class="btn btn-light btn-sm rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <h6 class="fw-bold mb-3">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="index.html" class="text-white text-decoration-none" style="opacity: 0.9;">Home</a></li>
+                    <li class="mb-2"><a href="categories.html" class="text-white text-decoration-none" style="opacity: 0.9;">Categories</a></li>
+                    <li class="mb-2"><a href="authors.html" class="text-white text-decoration-none" style="opacity: 0.9;">Authors</a></li>
+                    <li class="mb-2"><a href="publishers.html" class="text-white text-decoration-none" style="opacity: 0.9;">Publishers</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-6">
+                <h6 class="fw-bold mb-3">Support</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="orders.html" class="text-white text-decoration-none" style="opacity: 0.9;">My Orders</a></li>
+                    <li class="mb-2"><a href="cart.html" class="text-white text-decoration-none" style="opacity: 0.9;">Shopping Cart</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none" style="opacity: 0.9;">Help Center</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none" style="opacity: 0.9;">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="fw-bold mb-3">Newsletter</h6>
+                <p style="opacity: 0.9; font-size: 0.9rem;">Subscribe to get special offers and updates!</p>
+                <div class="input-group mb-2">
+                    <input type="email" class="form-control" placeholder="Your email" style="border-radius: 8px 0 0 8px;">
+                    <button class="btn btn-light" type="button" style="border-radius: 0 8px 8px 0;">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4" style="opacity: 0.3;">
+        <div class="text-center" style="opacity: 0.9;">
+            <p class="mb-0">&copy; 2025 Book4U. All rights reserved. | Made with <i class="bi bi-heart-fill text-danger"></i> for book lovers</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="scripts/orders.js"></script>
+</body>
+</html>
